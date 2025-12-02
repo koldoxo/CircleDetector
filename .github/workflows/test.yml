@@ -1,16 +1,12 @@
 on: push 
 jobs:
-  build:
+  test:
     runs-on: windows-latest
     steps:
       - uses: actions/checkout@v3
+      - run: mkdir pkg; cd pkg; git clone https://github.com/Microsoft/vcpkg.git; cmd .\vcpkg\bootstrap-vcpkg.bat
       - run: mkdir build
-      - run: cmake -G "Visual Studio 17 2022" -B build/ -S . -DENABLE_TESTING=TRUE
+      - run: cmake -G "Visual Studio 17 2022" -B build/ -S . -DENABLE_TESTING=TRUE -DUSE_VCPKG=TRUE
       - run: cmake --build build/ --config Debug
       - run: cmake --build build/ --config Release
-       
-  test:
-    needs: build
-    runs-on: windows-latest
-    steps:
       - run: cd build/ ; ctest
