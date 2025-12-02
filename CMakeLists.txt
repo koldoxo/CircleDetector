@@ -15,32 +15,22 @@ set(EXECUTABLE_NAME "Main")
 set(CMAKE_MODULE_PATH "${PROJECT_SOURCE_DIR}/cmake/")
 include(FetchContent)
 
-FetchContent_Declare(
-    nlohmann_json
-    GIT_REPOSITORY https://github.com/nlohmann/json
-    GIT_TAG v3.11.3
-    GIT_SHALLOW TRUE)
-FetchContent_MakeAvailable(nlohmann_json)
 
-FetchContent_Declare(
-    stb
-    GIT_REPOSITORY https://github.com/nothings/stb.git)
-FetchContent_MakeAvailable(stb)
+if(USE_VCPKG)
+    message(STATUS "Using VCPKG")
+    include(
+        ${CMAKE_SOURCE_DIR}/pkg/vcpkg/scripts/buildsystems/vcpkg.cmake)
+endif()
 
-FetchContent_Declare(
-    Catch2
-    GIT_REPOSITORY https://github.com/catchorg/Catch2
-    GIT_TAG v3.5.3
-    GIT_SHALLOW TRUE)
-FetchContent_MakeAvailable(Catch2)
-list(APPEND CMAKE_MODULE_PATH ${catch2_SOURCE_DIR}/extras)
-
+find_package(nlohmann_json REQUIRED)
 
 add_subdirectory(src)
 add_subdirectory(app)
 
 ### TESTS ###
 if(ENABLE_TESTING)
+    find_package(Catch2 REQUIRED)
+    list(APPEND CMAKE_MODULE_PATH ${catch2_SOURCE_DIR}/extras)
     include(CTest)
     enable_testing()
     add_subdirectory(tests)
