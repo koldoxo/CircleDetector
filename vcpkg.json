@@ -9,6 +9,10 @@
         {
             "name": "catch2",
             "version>=": "3.5.2"
+        },
+        {
+            "name": "opencv4",
+            "version>=": "4.10.0" 
         }
     ],
     "overrides": [
