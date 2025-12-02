@@ -22,6 +22,10 @@ FetchContent_Declare(
     GIT_SHALLOW TRUE)
 FetchContent_MakeAvailable(nlohmann_json)
 
+FetchContent_Declare(
+    stb
+    GIT_REPOSITORY https://github.com/nothings/stb.git)
+FetchContent_MakeAvailable(stb)
 
 FetchContent_Declare(
     Catch2
