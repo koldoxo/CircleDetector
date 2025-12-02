@@ -2,6 +2,7 @@ on: push
 jobs:
   build:
     runs-on: windows-latest
+    name: build
     steps:
       - uses: actions/checkout@v3
       - run: mkdir pkg; cd pkg; git clone https://github.com/Microsoft/vcpkg.git; cmd .\vcpkg\bootstrap-vcpkg.bat

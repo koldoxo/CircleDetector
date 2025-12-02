@@ -19,9 +19,21 @@ int main(void)
     std::cout << file["inputfile"]  << std::endl;
     std::cout << file["outputfile"] << std::endl;
   
-    cv::Mat image = cv::imread(file["inputfile"]);
+    cv::Mat sourceIm = cv::imread(file["inputfile"], cv::IMREAD_GRAYSCALE);
 
-    cv::imshow("source image", image);
+    //cv::imshow("source image", sourceIm);
+
+    cv::Mat resizedIm;
+
+    std::float_t ratio = static_cast<std::float_t>(sourceIm.rows) / static_cast<std::float_t>(sourceIm.cols);
+
+    std::float_t newCols = sourceIm.cols * 0.3333;
+    std::float_t newRows = ratio * newCols;
+
+    cv::resize(sourceIm, resizedIm, cv::Size(newCols, newRows) );
+
+    cv::imshow("resized image", resizedIm);
+
     cv::waitKey();
 
     return EXIT_SUCCESS;
