@@ -7,4 +7,8 @@ jobs:
       - run: cmake -G "Visual Studio 17 2022" -B build/ -S . -DENABLE_TESTING=TRUE
       - run: cmake --build build/ --config Debug
       - run: cmake --build build/ --config Release
-      - run: cd build/ ; ctest 
+       
+  test:
+    runs-on: windows-latest
+    steps:
+      - run: cd build/ ; ctest
