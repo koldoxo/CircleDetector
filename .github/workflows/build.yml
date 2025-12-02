@@ -4,6 +4,6 @@ jobs:
     runs-on: windows-latest
     steps:
       - uses: actions/checkout@v3
-      - run: cmake -G "Visual Studio 17 2022" -B build/ -S . 
+      - run: cmake -G "Visual Studio 17 2022" -B build/ -S . -DENABLE_TESTING=FALSE
       - run: cmake --build build/ --config Debug
       - run: cmake --build build/ --config Release 

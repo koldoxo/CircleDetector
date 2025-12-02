@@ -4,6 +4,7 @@ set(LIBRARY_HEADERS
     "../include/CircleDetector.h")
 set(LIBRARY_INCLUDES
     "./"
+    "../include/"
     "${CMAKE_BINARY_DIR}/configured_files/include")
 
 add_library(${LIBRARY_NAME} STATIC

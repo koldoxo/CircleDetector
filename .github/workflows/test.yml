@@ -1,0 +1,10 @@
+on: push 
+jobs:
+  build:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v3
+      - run: cmake -G "Visual Studio 17 2022" -B build/ -S . -DENABLE_TESTING=TRUE
+      - run: cmake --build build/ --config Debug
+      - run: cmake --build build/ --config Release
+      - run: cd build/ ; ctest 

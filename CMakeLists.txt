@@ -36,6 +36,8 @@ add_subdirectory(src)
 add_subdirectory(app)
 
 ### TESTS ###
-#include(CTest)
-#enable_testing()
-add_subdirectory(tests)
+if(ENABLE_TESTING)
+    include(CTest)
+    enable_testing()
+    add_subdirectory(tests)
+endif()
