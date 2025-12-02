@@ -2,7 +2,8 @@ set(EXE_SOURCES
     "Main.cpp")
 set(EXE_INCLUDES
     "./"
-    "../include/")
+    "../include/"
+    ${stb_SOURCE_DIR}/)
 
 add_executable(${EXECUTABLE_NAME} ${EXE_SOURCES})
 target_include_directories(${EXECUTABLE_NAME} PUBLIC
