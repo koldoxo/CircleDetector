@@ -1,62 +1,74 @@
+// STD
 #include <iostream>
 #include <fstream>
+#include <filesystem>
+#include <cstring>
 
+
+// [External] nlohmann_json
 #include <nlohmann/json.hpp>
 
-#include "CircleDetectorLib.h"
-
+// [External] OpenCV 4
 #include "opencv2/imgcodecs.hpp"
 #include "opencv2/highgui.hpp"
 #include "opencv2/imgproc.hpp"
+
+// [Local] 
+#include "CircleDetectorLib.h"
 
 int main(void)
 {
     std::cout << "Circle Detection..." << std::endl;
 
-    std::ifstream ifs("C:\\Git\\koldoxo\\ZTask\\app\\config.json");
-    nlohmann::json file = nlohmann::json::parse(ifs);
+    // check congi file
+    std::filesystem::path inputconfig("C:\\Git\\koldoxo\\CircleDetector\\app\\config.json");
 
-    std::cout << file["inputfile"]  << std::endl;
-    std::cout << file["outputfile"] << std::endl;
+    if (!std::filesystem::exists(inputconfig))
+    {
+        throw std::invalid_argument("config.json file does not exist");
+    }
+
+    // parse json
+    std::ifstream ifs(inputconfig);
+    nlohmann::json jsonfile = nlohmann::json::parse(ifs);
+
+    // check input image
+    std::string inputfilestr = jsonfile["inputfile"];
+    std::filesystem::path inputfile(inputfilestr);
+   
+    if (!std::filesystem::exists(inputfile))
+    {
+        throw std::invalid_argument("Input file entry does not exist");
+    }
+
+    std::cout << "Reading in... " << inputfile << std::endl;
+
+    //check output folder
+
+    std::string outputpathstr = jsonfile["outputpath"];
+    std::filesystem::path outputpath(outputpathstr);
+
+    if (!std::filesystem::is_directory(outputpath))
+    {
+        throw std::invalid_argument("Ouput path entry does not exist");
+    }
+
+    std::cout << "Writing to... " << outputpath << std::endl;
   
-    cv::Mat sourceIm = cv::imread(file["inputfile"], cv::IMREAD_GRAYSCALE);
+    cv::Mat source = cv::imread(jsonfile["inputfile"], cv::IMREAD_GRAYSCALE);
 
-    //cv::imshow("source image", sourceIm);
+    cv::Mat binary;
+    cv::threshold(source, binary, 50, 255, cv::THRESH_BINARY);
+  
+    std::filesystem::path outputfile = outputpath / ( inputfile.stem().string() + "_bin.png");
+    
+    std::cout << "Writing to... " << outputfile << std::endl;
 
-    cv::Mat resizedIm;
+    cv::imwrite( outputfile.string(), binary);
 
-    std::float_t ratio = static_cast<std::float_t>(sourceIm.rows) / static_cast<std::float_t>(sourceIm.cols);
+    cv::imshow("binary", binary);
 
-    std::float_t newCols = sourceIm.cols * 0.3333;
-    std::float_t newRows = ratio * newCols;
-
-    cv::resize(sourceIm, resizedIm, cv::Size(newCols, newRows) );
-
-    std::vector<cv::Vec3f> circles;
-    cv::HoughCircles(resizedIm, circles, cv::HOUGH_GRADIENT, 1.5, 50, 300, 100, 0, 0);
-
-    for (size_t i = 0; i < circles.size(); i++)
-    {
-        cv::Vec3i c = circles[i];
-        cv::Point center = cv::Point(c[0], c[1]);
-        // circle center
-        cv::circle(resizedIm, center, 1, cv::Scalar(0, 100, 100), 3, cv::LINE_AA);
-        // circle outline
-        int radius = c[2];
-        cv::circle(resizedIm, center, radius, cv::Scalar(255, 0, 255), 3, cv::LINE_AA);
-    }
-
-    int count = 0;
-    for (auto it = sourceIm.datastart ; it != sourceIm.dataend; it++)
-    {
-        ++count;
-    }
-
-    std::cout << "Image total size: " << sourceIm.cols * sourceIm.rows << "  " << std::endl;
-    std::cout << "Pointer count: "    << count << "  " << std::endl;
-
-    //cv::imshow("resized image", resizedIm);
-    //cv::waitKey();
+    cv::waitKey();   
 
     return EXIT_SUCCESS;
 }

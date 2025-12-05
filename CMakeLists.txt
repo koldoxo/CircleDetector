@@ -9,13 +9,13 @@ set(CMAKE_CXX_EXTENSIONS OFF)
 set(LIBRARY_NAME "CircleDetectorLib")
 set(EXECUTABLE_NAME "CircleDetector")
 
-if(USE_VCPKG)
-    message(STATUS "Using VCPKG")
-    include(${CMAKE_SOURCE_DIR}/pkg/vcpkg/scripts/buildsystems/vcpkg.cmake)
-endif()
+message(STATUS "Using VCPKG")
+include(${CMAKE_SOURCE_DIR}/pkg/vcpkg/scripts/buildsystems/vcpkg.cmake)
 
+# nlohman_json
 find_package(nlohmann_json REQUIRED)
 
+#OpenCV 4
 set(OpenCV_ROOT "${VCPKG_INSTALLED_DIR}/x64-windows/share/opencv4")
 find_package(OpenCV REQUIRED)
 

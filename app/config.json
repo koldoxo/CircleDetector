@@ -1,4 +1,4 @@
 {
-    "inputfile" : "C:\\Git\\koldoxo\\ZTask\\data\\1.png",
-    "outputpath" : "C:\\Git\\koldoxo\\ZTask\\data"
+    "inputfile" : "C:\\Git\\koldoxo\\CircleDetector\\data\\synthetic\\circle.png",
+    "outputpath" : "C:\\Git\\koldoxo\\CircleDetector\\output"
 }
