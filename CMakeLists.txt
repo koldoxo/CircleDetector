@@ -11,8 +11,7 @@ set(EXECUTABLE_NAME "Main")
 
 if(USE_VCPKG)
     message(STATUS "Using VCPKG")
-    include(
-        ${CMAKE_SOURCE_DIR}/pkg/vcpkg/scripts/buildsystems/vcpkg.cmake)
+    include(${CMAKE_SOURCE_DIR}/pkg/vcpkg/scripts/buildsystems/vcpkg.cmake)
 endif()
 
 find_package(nlohmann_json REQUIRED)

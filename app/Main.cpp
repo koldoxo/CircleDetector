@@ -32,9 +32,31 @@ int main(void)
 
     cv::resize(sourceIm, resizedIm, cv::Size(newCols, newRows) );
 
-    cv::imshow("resized image", resizedIm);
+    std::vector<cv::Vec3f> circles;
+    cv::HoughCircles(resizedIm, circles, cv::HOUGH_GRADIENT, 1.5, 50, 300, 100, 0, 0);
 
-    cv::waitKey();
+    for (size_t i = 0; i < circles.size(); i++)
+    {
+        cv::Vec3i c = circles[i];
+        cv::Point center = cv::Point(c[0], c[1]);
+        // circle center
+        cv::circle(resizedIm, center, 1, cv::Scalar(0, 100, 100), 3, cv::LINE_AA);
+        // circle outline
+        int radius = c[2];
+        cv::circle(resizedIm, center, radius, cv::Scalar(255, 0, 255), 3, cv::LINE_AA);
+    }
+
+    int count = 0;
+    for (auto it = sourceIm.datastart ; it != sourceIm.dataend; it++)
+    {
+        ++count;
+    }
+
+    std::cout << "Image total size: " << sourceIm.cols * sourceIm.rows << "  " << std::endl;
+    std::cout << "Pointer count: "    << count << "  " << std::endl;
+
+    //cv::imshow("resized image", resizedIm);
+    //cv::waitKey();
 
     return EXIT_SUCCESS;
 }
