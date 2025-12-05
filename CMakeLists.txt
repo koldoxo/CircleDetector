@@ -1,13 +1,13 @@
 cmake_minimum_required(VERSION 3.22)
 
-project(ZTask VERSION 1.0.0 LANGUAGES C CXX)
+project(ZTASK VERSION 1.0.0 LANGUAGES C CXX)
 
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_EXTENSIONS OFF)
 
 set(LIBRARY_NAME "CircleDetectorLib")
-set(EXECUTABLE_NAME "Main")
+set(EXECUTABLE_NAME "CircleDetector")
 
 if(USE_VCPKG)
     message(STATUS "Using VCPKG")

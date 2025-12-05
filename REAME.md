@@ -2,7 +2,7 @@ This is the CircleDetector project.
 
 Setup (in powershell):
 ```
-mkdir pkg; cd pkg; git clone https://github.com/Microsoft/vcpkg.git; cmd .\vcpkg\bootstrap-vcpkg.bat
+mkdir pkg; cd pkg; git clone https://github.com/Microsoft/vcpkg.git; cmd; .\vcpkg\bootstrap-vcpkg.bat
 mkdir build
 ```
 

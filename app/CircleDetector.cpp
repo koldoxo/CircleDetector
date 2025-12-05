@@ -3,7 +3,7 @@
 
 #include <nlohmann/json.hpp>
 
-#include "CircleDetector.h"
+#include "CircleDetectorLib.h"
 
 #include "opencv2/imgcodecs.hpp"
 #include "opencv2/highgui.hpp"

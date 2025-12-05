@@ -1,8 +1,8 @@
 #include <catch2/catch_test_macros.hpp>
 
-#include "CircleDetector.h"
+#include "CircleDetectorLib.h"
 
-TEST_CASE("test_api")
+TEST_CASE("CircleDetectorInstance")
 {
 
     ZTask::CircleDetector::ParameterPtr parameter{};

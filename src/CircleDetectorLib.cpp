@@ -1,4 +1,4 @@
-#include "CircleDetector.h"
+#include "CircleDetectorLib.h"
 
 int ZTask::CircleDetector::Operator::calculate(ParameterPtr parameter)
 {
