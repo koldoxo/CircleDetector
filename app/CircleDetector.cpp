@@ -16,7 +16,6 @@
 // [Local] 
 #include "CircleDetectorLib.h"
 
-
 void curvature(cv::Mat& src, cv::Mat& dst, double sigma);
 
 int main(void)
@@ -63,14 +62,14 @@ int main(void)
     cv::Mat destination = cv::Mat::zeros(source.size(), CV_16U);
     
     // compute curvatue
-    curvature(source, destination, 10);
+    curvature(source, destination, 1);
 
     // write image
     std::filesystem::path outputfile = outputpath / (inputfile.stem().string() + "_curv.png");
     cv::imwrite(outputfile.string(), destination);
 
     // show result
-    cv::imshow("curvature", destination);
+    // cv::imshow("curvature", destination);
 
     cv::waitKey();
 
@@ -101,7 +100,7 @@ void curvature(cv::Mat& src, cv::Mat& dst, double sigma)
     cv::Mat Fxy;
     cv::Sobel(Fx, Fxy, CV_32F, 0, 1, 3);
 
-    // curvature = (F2y * Fxx + F2x * Fyy - 2 * Fx * Fy * Fxy) / ( F2x + F2y)^(3 / 2);
+    //curvature = (F2y * Fxx + F2x * Fyy - 2 * Fx * Fy * Fxy) / ( F2x + F2y)^(3 / 2);
     
     cv::Mat term1;
     cv::multiply(F2y, Fxx, term1);
