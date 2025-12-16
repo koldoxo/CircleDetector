@@ -58,16 +58,18 @@ int main(void)
 
     std::cout << "Writing to... " << outputpath << std::endl;
   
+    // read data
     cv::Mat source = cv::imread(jsonfile["inputfile"], cv::IMREAD_GRAYSCALE);
     cv::Mat destination = cv::Mat::zeros(source.size(), CV_16U);
     
+    // compute curvatue
     curvature(source, destination, 10);
 
+    // write image
     std::filesystem::path outputfile = outputpath / (inputfile.stem().string() + "_curv.png");
     cv::imwrite(outputfile.string(), destination);
 
-    //cv::GaussianBlur(source, destination, cv::Size(5, 5), 1, 1, cv::BORDER_CONSTANT);
-
+    // show result
     cv::imshow("curvature", destination);
 
     cv::waitKey();
