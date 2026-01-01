@@ -1,0 +1,104 @@
+% test.tex
+\title{Circle Detector}%\cite{LinkReference1}
+
+\author{Luis A. Torres-Cisneros\cite{Author1}}
+
+\newcommand{\abstractText}{\noindent
+We present a deterministic algorithm for rapid computation of circles. The algortihm 
+bases on segment length and contour curvature computation. Then, circle and circular segments are accepted 
+or discarded relying on two criteria: variance of the curvatures through a single segment 
+(in case of isolated segments) and its closeness to the threshold value of $2\pi$ (in case of closed ones).
+We demonstrate its robustness for detecting circle by applying to different scenarios.
+}
+
+%%%%%%%%%%%%%%%%%
+% Configuration %
+%%%%%%%%%%%%%%%%%
+
+\documentclass[12pt, a4paper]{article}%twocolumn
+\usepackage{xurl}
+\usepackage[super,comma,sort&compress]{natbib}
+\usepackage{abstract}
+\renewcommand{\abstractnamefont}{\normalfont\bfseries}%\bfseries
+\renewcommand{\abstracttextfont}{\normalfont\small}%\itshape
+\usepackage{lipsum}
+
+%%%%%%%%%%%%%%
+% References %
+%%%%%%%%%%%%%%
+
+% If changing the name of the bib file, change \bibliography{test} at the bottom
+\begin{filecontents}{references.bib}
+
+@misc{LinkReference1,
+  title        = "Link Title",
+  author       = "Link Creator(s)",
+  howpublished = "\url{https://example.com/}",
+}
+
+@misc{Author1,
+  author       = "Torres-Cisneros, Luis A.",
+  howpublished = "\url{luis.torres-cisneros@outlook.com}",
+}
+
+@article{ArticleReference1,
+  author  = "Lastname1, Firstname1 and Lastname2, Firstname2",
+  title   = "Article title",
+  year    = "Year",
+  journal = "Journal name",
+  note    = "\url{https://dx.doi.org/...}",
+}
+
+\end{filecontents}
+
+% Any configuration that should be done before the end of the preamble:
+\usepackage{hyperref}
+\hypersetup{colorlinks=true, urlcolor=blue, linkcolor=blue, citecolor=blue}
+
+\begin{document}
+
+%%%%%%%%%%%%
+% Abstract %
+%%%%%%%%%%%%
+
+\twocolumn[
+  \begin{@twocolumnfalse}
+    \maketitle
+    \begin{abstract}
+      \abstractText
+      \newline
+      \newline
+    \end{abstract}
+  \end{@twocolumnfalse}
+]
+
+%%%%%%%%%%%
+% Article %
+%%%%%%%%%%%
+
+\section{Introduction}
+
+This is the first sentence\cite{ArticleReference1}.
+
+\section{Methods}
+
+\lipsum[1]
+
+\section{Results}
+
+\lipsum[1]
+
+\section{Conclusion}
+
+\lipsum[1]
+
+
+%%%%%%%%%%%%%%
+% References %
+%%%%%%%%%%%%%%
+
+\nocite{*}
+\bibliographystyle{plain}
+\bibliography{references}
+
+\end{document}

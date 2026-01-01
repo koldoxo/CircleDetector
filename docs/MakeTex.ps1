@@ -1,0 +1,9 @@
+pdflatex article.tex
+bibtex article.aux 
+pdflatex article.tex
+pdflatex article.tex
+rm *.aux
+rm *.log
+rm *.out
+rm *.bbl
+rm *.blg
