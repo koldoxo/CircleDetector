@@ -1,4 +1,4 @@
 {
-    "inputfile" : "C:\\Git\\koldoxo\\CircleDetector\\data\\real\\1.png",
+    "inputfile" : "C:\\Git\\koldoxo\\CircleDetector\\data\\synthetic\\circle.png",
     "outputpath" : "C:\\Git\\koldoxo\\CircleDetector\\output"
 }

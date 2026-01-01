@@ -77,7 +77,7 @@ int main(void)
         cv::imwrite(outputbinary.string(), binary);
     }
     
-    auto sigma = 3.;
+    auto sigma = 0.5;
     cv::Mat temp;
 
     int size = std::floor(2 * sigma * 2 + 1); // 95% gauge
