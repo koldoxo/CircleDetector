@@ -16,7 +16,15 @@
 // [Local] 
 #include "CircleDetectorLib.h"
 
-void curvature(cv::Mat& src, cv::Mat& dst, double sigma);
+cv::Mat src_gray;
+int thresh = 100;
+cv::RNG rng(12345);
+
+void curvature(cv::Mat& src, cv::Mat& dst, double sigma, std::filesystem::path outputpath, std::string stem);
+
+void save_image(cv::Mat& im, std::filesystem::path outputpath, std::string stem, std::string sufix);
+
+void thresh_callback(int, void*);
 
 int main(void)
 {
@@ -59,67 +67,83 @@ int main(void)
   
     // read data
     cv::Mat source = cv::imread(jsonfile["inputfile"], cv::IMREAD_GRAYSCALE);
-    cv::Mat destination = cv::Mat::zeros(source.size(), CV_16U);
+    cv::Mat source_s;
+    cv::resize(source, source_s, cv::Size(int(source.cols / 3), int(source.rows / 3) ) );
+
+    cv::Mat binary; 
+    {
+        cv::threshold(source, binary, 50, 255, cv::THRESH_BINARY);
+        std::filesystem::path outputbinary = outputpath / (inputfile.stem().string() + "_bin.png");
+        cv::imwrite(outputbinary.string(), binary);
+    }
     
-    // compute curvatue
-    curvature(source, destination, 1);
+    auto sigma = 3.;
+    cv::Mat temp;
 
-    // write image
-    std::filesystem::path outputfile = outputpath / (inputfile.stem().string() + "_curv.png");
-    cv::imwrite(outputfile.string(), destination);
+    int size = std::floor(2 * sigma * 2 + 1); // 95% gauge
+    {
+        cv::GaussianBlur(binary, temp, cv::Size(size, size), sigma, sigma, cv::BORDER_CONSTANT);
+        save_image(temp, outputpath, inputfile.stem().string(), "_blurr");
+    }
 
-    // show result
-    // cv::imshow("curvature", destination);
+    std::vector<std::vector<cv::Point> > contours;
+    std::vector<cv::Vec4i> hierarchy;
+    cv::findContours(temp, contours, hierarchy, cv::RETR_TREE, cv::CHAIN_APPROX_SIMPLE);
+    cv::Mat drawing = cv::Mat::zeros(temp.size(), CV_8UC3);
+    for (size_t i = 0; i < contours.size(); i++)
+    {
+        cv::Scalar color = cv::Scalar(rng.uniform(0, 256), rng.uniform(0, 256), rng.uniform(0, 256));
+        cv::drawContours(drawing, contours, (int)i, color, 2, cv::LINE_8, hierarchy, 0);
+    }
+    
+    save_image(drawing, outputpath, inputfile.stem().string(), "_contours");
+    
+    //cv::imshow("Contours", drawing);
+    //cv::waitKey();
+    /*
+    const char* source_window = "Source";
+    cv::namedWindow(source_window);
+    cv::imshow(source_window, source);
 
+    const int max_thresh = 255;
+    cv::createTrackbar("Canny thresh:", source_window, &thresh, max_thresh, thresh_callback);
+    thresh_callback(0, 0);
     cv::waitKey();
+    */
 
     return EXIT_SUCCESS;
 }
 
-void curvature(cv::Mat& src, cv::Mat& dst, double sigma)
+void save_image(cv::Mat& im, std::filesystem::path outputpath, std::string stem, std::string sufix)
 {
-    cv::Mat temp; 
-    int size = std::floor( 2*sigma*2 + 1 );
-    cv::GaussianBlur(src , temp, cv::Size(size,size), sigma, sigma, cv::BORDER_CONSTANT);
+    std::filesystem::path outputfile = outputpath / (stem + sufix + ".png");
+    cv::imwrite(outputfile.string(), im);
+}
 
-    cv::Mat Fx;
-    cv::Sobel(temp, Fx, CV_32F, 1, 0, 3);
+void curvature(cv::Mat& src, cv::Mat& dst, double sigma, std::filesystem::path outputpath, std::string stem)
+{
+    cv::Mat temp;
 
-    cv::Mat Fy;
-    cv::Sobel(temp, Fy, CV_32F, 0, 1, 3);
+    int size = std::floor( 2*sigma*2 + 1 ); // 95% gauge
+    {
+        cv::GaussianBlur(src, temp, cv::Size(size, size), sigma, sigma, cv::BORDER_CONSTANT);
+        save_image(temp, outputpath, stem, "_blurr");
+    }
+   
+}
 
-    cv::Mat F2x = Fx * Fx;
-    cv::Mat F2y = Fy * Fy;
-
-    cv::Mat Fxx;
-    cv::Sobel(temp, Fxx, CV_32F, 2, 0, 3);
-
-    cv::Mat Fyy;
-    cv::Sobel(temp, Fyy, CV_32F, 0, 2, 3);
-
-    cv::Mat Fxy;
-    cv::Sobel(Fx, Fxy, CV_32F, 0, 1, 3);
-
-    //curvature = (F2y * Fxx + F2x * Fyy - 2 * Fx * Fy * Fxy) / ( F2x + F2y)^(3 / 2);
-    
-    cv::Mat term1;
-    cv::multiply(F2y, Fxx, term1);
-    
-    cv::Mat term2;
-    cv::multiply(F2x, Fyy, term2);
-
-    cv::Mat term3;
-    cv::multiply(Fx, Fy, term3, -2.);
-
-    cv::Mat numerator = cv::Mat::zeros(src.size(), CV_32F);
-    cv::add(term1, term2, numerator);
-    cv::add(numerator, term3, numerator);
-
-    numerator = cv::abs(numerator);
-
-    cv::Mat denominator = cv::Mat::zeros(src.size(), CV_16U);
-    cv::add(F2x, F2y, denominator);
-    cv::pow(denominator, 1.5, denominator);
-
-    cv::divide(numerator, denominator, dst);
+void thresh_callback(int, void*)
+{
+    cv::Mat canny_output;
+    //Canny(src_gray, canny_output, thresh, thresh * 2);
+    std::vector<std::vector<cv::Point> > contours;
+    std::vector<cv::Vec4i> hierarchy;
+    cv::findContours(src_gray, contours, hierarchy, cv::RETR_TREE, cv::CHAIN_APPROX_SIMPLE);
+    cv::Mat drawing = cv::Mat::zeros(canny_output.size(), CV_8UC3);
+    for (size_t i = 0; i < contours.size(); i++)
+    {
+        cv::Scalar color = cv::Scalar(rng.uniform(0, 256), rng.uniform(0, 256), rng.uniform(0, 256));
+        cv::drawContours(drawing, contours, (int)i, color, 2, cv::LINE_8, hierarchy, 0);
+    }
+    cv::imshow("Contours", drawing);
 }

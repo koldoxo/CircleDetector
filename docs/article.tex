@@ -78,7 +78,20 @@ We demonstrate its robustness for detecting circle by applying to different scen
 
 \section{Introduction}
 
-This is the first sentence\cite{ArticleReference1}.
+Circles have a well defined mathematical form, \emph{i.e.} 
+
+\begin{equation}\label{eq:cirlce-eq}
+  x^2 + y^2 = r\,.
+\end{equation}
+
+However, finding them in color images might become difficult since
+effects as partial occlusion, color intensity variantion or segment cutting
+might appear. Perhaps the most widely used algortihtm for circle detection 
+is the so-called circular Hough transform. This algorithm base on the mapping 
+of all points $ \{x-x_0,y-y_0\} $ whose reprensentation on $x_0$- and $y_0$-plane
+intersect at one single point. 
+
+
 
 \section{Methods}
 
