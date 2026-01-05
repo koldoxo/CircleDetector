@@ -16,6 +16,8 @@
 // [Local] 
 #include "CircleDetectorLib.h"
 
+cv::RNG rng(12345);
+
 void curvature(cv::Mat& src, cv::Mat& dst, double sigma, std::filesystem::path outputpath, std::string stem);
 
 void save_image(cv::Mat& im, std::filesystem::path outputpath, std::string stem, std::string sufix);
@@ -64,24 +66,40 @@ int main(void)
 
     cv::Mat binary; 
     {
-        cv::threshold(source, binary, 50.f, 1.f, cv::THRESH_BINARY);
+        cv::threshold(source, binary, 50.f, 255.f, cv::THRESH_BINARY);
         std::filesystem::path outputbinary = outputpath / (inputfile.stem().string() + "_bin.png");
         cv::imwrite(outputbinary.string(), binary);
     }
     
-
-    cv::Mat destination = cv::Mat::zeros(source.size(), CV_32F); // CV_16U 
+    // cv::Mat destination = cv::Mat::zeros(source.size(), CV_32F); // CV_16U 
     
     // compute curvatue
-    curvature(binary, destination, 255, outputpath, inputfile.stem().string());
+    // curvature(binary, destination, 255, outputpath, inputfile.stem().string());
 
     // save image
     save_image(binary, outputpath, inputfile.stem().string(), "_bin");
 
-    //vector<vector<cv::Point> > contours;
-    //vector<Vec4i> hierarchy;
-    //findContours( binary, contours, hierarchy, RETR_TREE, CHAIN_APPROX_SIMPLE );
+    std::vector<std::vector<cv::Point> > contours;
+    std::vector<cv::Vec4i> hierarchy;
+    
+    std::float_t sigma = 1.f;
+    cv::Mat blurr;
+    int size = std::floor(2 * sigma * 2 + 1); // 95% gauge
+    {
+        cv::GaussianBlur(binary, blurr, cv::Size(size, size), sigma, sigma, cv::BORDER_CONSTANT);
+        save_image(blurr, outputpath, inputfile.stem().string(), "_blurr");
+    }
+    
+    cv::findContours(blurr, contours, hierarchy, cv::RETR_TREE, cv::CHAIN_APPROX_SIMPLE );
 
+    cv::Mat drawing = cv::Mat::zeros(binary.size(), CV_8UC3);
+    for (size_t i = 0; i < contours.size(); i++)
+    {
+        cv::Scalar color = cv::Scalar(rng.uniform(0, 256), rng.uniform(0, 256), rng.uniform(0, 256));
+        drawContours(drawing, contours, (int)i, color, 2, cv::LINE_8, hierarchy, 0);
+    }
+
+    save_image(drawing, outputpath, inputfile.stem().string(), "_contours");
 
     // show result
     //cv::imshow("curvature", destination);
@@ -105,7 +123,4 @@ void curvature(cv::Mat& src, cv::Mat& dst, double sigma, std::filesystem::path o
         cv::GaussianBlur(src, temp, cv::Size(size, size), sigma, sigma, cv::BORDER_CONSTANT);
         save_image(temp, outputpath, stem, "_blurr");
     }
-    
-
-   
 }
