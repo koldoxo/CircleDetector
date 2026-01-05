@@ -4,7 +4,6 @@
 #include <filesystem>
 #include <cstring>
 
-
 // [External] nlohmann_json
 #include <nlohmann/json.hpp>
 
@@ -24,7 +23,7 @@ void unpack_parameters(nlohmann::json inputjson, std::map<std::string, std::floa
 
 void check_parameters(const std::map<std::string, std::float_t>& params);
 
-void pre_processing(cv::Mat& in, cv::Mat& out, std::map<std::string, std::float_t>& params);
+void pre_processing(cv::Mat& in, cv::Mat& out, std::map<std::string, std::float_t>& params, bool debug = false);
 
 int main(void)
 {
@@ -72,26 +71,14 @@ int main(void)
     // check parameters
     check_parameters(parameters);
 
-
     // read data
     cv::Mat source = cv::imread(jsonfile["input_file"], cv::IMREAD_GRAYSCALE);
-    
 
-    // save image
-    // save_image(binary, outputpath, inputfile.stem().string(), "_bin");
-    //std::float_t sigma = 1.f;
-    //cv::Mat blurr;
-    //int size = std::floor(2 * sigma * 2 + 1); // 95% gauge
-    //{
-    //    cv::GaussianBlur(binary, blurr, cv::Size(size, size), sigma, sigma, cv::BORDER_CONSTANT);
-    //    save_image(blurr, outputpath, inputfile.stem().string(), "_blurr");
-    //}
-    
-
+    // call pre_processing
     cv::Mat proc;
+    pre_processing(source, proc, parameters, true);
 
-    pre_processing(source, proc, parameters);
-
+    // get contours
     std::vector<std::vector<cv::Point> > contours;
     std::vector<cv::Vec4i> hierarchy;
     cv::findContours(proc, contours, hierarchy, cv::RETR_TREE, cv::CHAIN_APPROX_SIMPLE );
@@ -105,14 +92,14 @@ int main(void)
 
     save_image(drawing, outputpath, inputfile.stem().string(), "_contours");
 
-    //show result
-    //cv::imshow("curvature", destination);
-    //cv::waitKey();
+    // show result
+    // cv::imshow("curvature", destination);
+    // cv::waitKey();
 
     return EXIT_SUCCESS;
 }
 
-void pre_processing(cv::Mat& in, cv::Mat& out, std::map<std::string, std::float_t>& params)
+void pre_processing(cv::Mat& in, cv::Mat& out, std::map<std::string, std::float_t>& params, bool debug)
 {
     
     cv::Mat bin;
@@ -121,12 +108,15 @@ void pre_processing(cv::Mat& in, cv::Mat& out, std::map<std::string, std::float_
         cv::threshold(in, bin, t, 255.f, cv::THRESH_BINARY);
     }
     
-    //cv::Mat blurr;
+    if (debug) { save_image(bin, "./", "debug", "bin"); }
+
     std::float_t s = params.find("sigma")->second;
     int size = std::floor(2 * s * 2 + 1); // 95% gauge
     {
         cv::GaussianBlur(bin, out, cv::Size(size, size), s, s, cv::BORDER_CONSTANT);
     }
+
+    if (debug) { save_image(out, "./", "debug", "blur"); }
 }
 
 
