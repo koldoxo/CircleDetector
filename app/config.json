@@ -1,4 +1,8 @@
 {
-    "inputfile" : "C:\\Git\\koldoxo\\CircleDetector\\data\\synthetic\\circle.png",
-    "outputpath" : "C:\\Git\\koldoxo\\CircleDetector\\output"
+    "input_file" : "C:\\Git\\koldoxo\\CircleDetector\\data\\real\\1.png",
+    "output_path" : "C:\\Git\\koldoxo\\CircleDetector\\output",
+    "threshold" : "100",
+    "sigma" : "5",
+    "min_length" : "20",
+    "window_size": "5"
 }
