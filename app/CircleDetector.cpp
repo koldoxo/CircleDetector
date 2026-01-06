@@ -101,6 +101,7 @@ int main(void)
     
     {
         std::cout << "Printing found Contours" << std::endl;
+        #pragma omp parallel for
         for (size_t i = 0; i < contours->size(); i++)
         {
             cv::Scalar color = cv::Scalar(rng.uniform(0, 256), rng.uniform(0, 256), rng.uniform(0, 256));

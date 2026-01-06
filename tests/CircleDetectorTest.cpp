@@ -5,8 +5,11 @@
 TEST_CASE("CircleDetectorInstance")
 {
 
-    ZTask::CircleDetector::ParameterPtr parameter{};
-    ZTask::CircleDetector::Operator op{};
+    std::shared_ptr<std::vector<std::vector<cv::Point> >> contours = std::make_shared<std::vector<std::vector<cv::Point> >>();
+
+    ZTask::CircleDetector::ParameterPtr parameter = std::make_shared<ZTask::CircleDetector::Parameter>();
+    parameter->inputContours = contours;
+    ZTask::CircleDetector::Operator op;
 
     op.calculate(parameter);
 
