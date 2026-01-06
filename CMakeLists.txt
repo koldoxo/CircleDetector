@@ -19,6 +19,8 @@ find_package(nlohmann_json REQUIRED)
 set(OpenCV_ROOT "${VCPKG_INSTALLED_DIR}/x64-windows/share/opencv4")
 find_package(OpenCV REQUIRED)
 
+find_package(OpenMP REQUIRED)
+
 add_subdirectory(src)
 add_subdirectory(app)
 

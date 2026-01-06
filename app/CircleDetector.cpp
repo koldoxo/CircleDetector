@@ -3,6 +3,8 @@
 #include <fstream>
 #include <filesystem>
 #include <cstring>
+#include <memory>
+#include <vector>
 
 // [External] nlohmann_json
 #include <nlohmann/json.hpp>
@@ -50,10 +52,9 @@ int main(void)
         throw std::invalid_argument("Input file entry does not exist");
     }
 
-    std::cout << "Reading from... " << inputfile << std::endl;
+    std::cout << "Reading from " << inputfile << std::endl;
 
     //check output folder
-
     std::string outputpathstr = jsonfile["output_path"];
     std::filesystem::path outputpath(outputpathstr);
 
@@ -62,12 +63,19 @@ int main(void)
         throw std::invalid_argument("Ouput path entry does not exist");
     }
 
-    std::cout << "Writing to... " << outputpath << std::endl;
+    std::cout << "Writing to " << outputpath << std::endl;
   
+    std::string debugstr = jsonfile["debug"];
+    bool debug = false;
+    if (debugstr == "true") { debug = true; }
+
     // unpack parameters
     std::map<std::string, std::float_t> parameters;
-    unpack_parameters(jsonfile, parameters);
-
+    {
+        std::cout << "Unpacking Parameters" << std::endl;
+        unpack_parameters(jsonfile, parameters);
+    }
+    
     // check parameters
     check_parameters(parameters);
 
@@ -76,22 +84,40 @@ int main(void)
 
     // call pre_processing
     cv::Mat proc;
-    pre_processing(source, proc, parameters, true);
-
-    // get contours
-    std::vector<std::vector<cv::Point> > contours;
-    std::vector<cv::Vec4i> hierarchy;
-    cv::findContours(proc, contours, hierarchy, cv::RETR_TREE, cv::CHAIN_APPROX_SIMPLE );
-
-    cv::Mat drawing = cv::Mat::zeros(source.size(), CV_8UC3);
-    for (size_t i = 0; i < contours.size(); i++)
     {
-        cv::Scalar color = cv::Scalar(rng.uniform(0, 256), rng.uniform(0, 256), rng.uniform(0, 256));
-        drawContours(drawing, contours, (int)i, color, 2, cv::LINE_8, hierarchy, 0);
+        std::cout << "Calling Preprocessing" << std::endl;
+        pre_processing(source, proc, parameters, debug);
+    }
+    
+    // get contours
+    std::shared_ptr<std::vector<std::vector<cv::Point> >> contours = std::make_shared<std::vector<std::vector<cv::Point> >>();
+    std::vector<cv::Vec4i> hierarchy;
+    {
+        std::cout << "Finding Contours" << std::endl;
+        cv::findContours(proc, *contours, hierarchy, cv::RETR_TREE, cv::CHAIN_APPROX_SIMPLE);
+    }
+    
+    cv::Mat drawing = cv::Mat::zeros(source.size(), CV_8UC3);
+    
+    {
+        std::cout << "Printing found Contours" << std::endl;
+        for (size_t i = 0; i < contours->size(); i++)
+        {
+            cv::Scalar color = cv::Scalar(rng.uniform(0, 256), rng.uniform(0, 256), rng.uniform(0, 256));
+            drawContours(drawing, *contours, (int)i, color, 2, cv::LINE_8, hierarchy, 0);
+        }
+        save_image(drawing, outputpath, inputfile.stem().string(), "_contours");
     }
 
-    save_image(drawing, outputpath, inputfile.stem().string(), "_contours");
-
+    // calling circle-detector
+    {
+        std::cout << "Calling CircleDetector" << std::endl;
+        ZTask::CircleDetector::ParameterPtr param = std::make_shared<ZTask::CircleDetector::Parameter>();
+        param->inputContours = contours;
+        ZTask::CircleDetector::Operator op;
+        op.calculate(param);
+    }
+    
     // show result
     // cv::imshow("curvature", destination);
     // cv::waitKey();
