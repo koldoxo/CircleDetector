@@ -18,7 +18,6 @@ target_include_directories(${LIBRARY_NAME} PUBLIC
 target_link_libraries(${LIBRARY_NAME} PUBLIC
     nlohmann_json::nlohmann_json
     ${OpenCV_LIBS}
-    OpenMP::OpenMP_CXX
     )
 
 if(OpenMP_CXX_FOUND)
