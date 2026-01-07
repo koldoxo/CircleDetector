@@ -8,6 +8,10 @@
 #include "opencv2/highgui.hpp"
 #include "opencv2/imgproc.hpp"
 
+// [Local] 
+
+#include "DataTypes.h"
+
 namespace ZTask
 {
 
@@ -18,8 +22,12 @@ namespace ZTask
         class Parameter
         {
         public:
-            std::shared_ptr<std::vector<std::vector<cv::Point>>> inputContours;
-
+            std::shared_ptr<ContourArray> inputContours;
+            std::shared_ptr<ContourArray> outputContours;
+            std::uint64_t                 inputWindowRatio;
+            //std::uint64_t               inputWindowSize;
+            std::uint64_t                 inputMinContourLength;
+            
         };// class Parameter
 
         using ParameterPtr = std::shared_ptr<Parameter>;

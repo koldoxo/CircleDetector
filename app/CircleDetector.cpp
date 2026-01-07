@@ -5,6 +5,7 @@
 #include <cstring>
 #include <memory>
 #include <vector>
+#include <chrono>
 
 // [External] nlohmann_json
 #include <nlohmann/json.hpp>
@@ -27,12 +28,20 @@ void check_parameters(const std::map<std::string, std::float_t>& params);
 
 void pre_processing(cv::Mat& in, cv::Mat& out, std::map<std::string, std::float_t>& params, bool debug = false);
 
-int main(void)
+int main(int argc, char* argv[])
 {
     std::cout << "Circle Detection..." << std::endl;
 
     // check config file
-    std::filesystem::path inputconfig("C:\\Git\\koldoxo\\CircleDetector\\app\\config.json");
+    // std::filesystem::path inputconfig("C:\\Git\\koldoxo\\CircleDetector\\app\\config.json");
+
+    if (argc < 1)
+    {
+        throw std::invalid_argument("Provide a path to config.json");
+    }
+
+    std::string inputstr = argv[1];
+    std::filesystem::path inputconfig = inputstr;
 
     if (!std::filesystem::exists(inputconfig))
     {
@@ -102,7 +111,7 @@ int main(void)
     {
         std::cout << "Printing found Contours" << std::endl;
         #pragma omp parallel for
-        for (size_t i = 0; i < contours->size(); i++)
+        for (std::int64_t i = 0; i < contours->size(); i++)
         {
             cv::Scalar color = cv::Scalar(rng.uniform(0, 256), rng.uniform(0, 256), rng.uniform(0, 256));
             drawContours(drawing, *contours, (int)i, color, 2, cv::LINE_8, hierarchy, 0);
@@ -161,9 +170,9 @@ void unpack_parameters(nlohmann::json jsonfile, std::map<std::string, std::float
     std::float_t min_length = std::atof(min_lengthstr.c_str());
     params["min_length"] = min_length;
 
-    std::string window_sizestr = jsonfile["window_size"];
-    std::float_t window_size = std::atof(window_sizestr.c_str());
-    params["window_size"] = window_size;
+    std::string window_ratiostr = jsonfile["window_ratio"];
+    std::float_t window_ratio = std::atof(window_ratiostr.c_str());
+    params["window_ratio"] = window_ratio;
 
 }
 

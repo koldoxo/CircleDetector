@@ -18,7 +18,13 @@ target_link_libraries(
     PUBLIC
     ${LIBRARY_NAME}
     nlohmann_json::nlohmann_json
-    ${OpenCV_LIBS})
+    ${OpenCV_LIBS}
+    )
+
+if(OpenMP_CXX_FOUND)
+    message(STATUS "OpenMP active: ${EXECUTABLE_NAME}")
+    target_link_libraries(${EXECUTABLE_NAME} PUBLIC OpenMP::OpenMP_CXX)
+endif()
 
 # Add your main executable target first
 # add_executable(MyApp main.cpp)

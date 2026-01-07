@@ -1,7 +1,9 @@
 set(LIBRARY_SOURCES
     "CircleDetectorLib.cpp")
 set(LIBRARY_HEADERS
-    "../include/CircleDetectorLib.h")
+    "../include/CircleDetectorLib.h"
+    "../include/DataTypes.h"
+    )
 set(LIBRARY_INCLUDES
     "./"
     "../include/"
@@ -16,6 +18,13 @@ target_include_directories(${LIBRARY_NAME} PUBLIC
 target_link_libraries(${LIBRARY_NAME} PUBLIC
     nlohmann_json::nlohmann_json
     ${OpenCV_LIBS}
+    OpenMP::OpenMP_CXX
     )
+
+if(OpenMP_CXX_FOUND)
+    message(STATUS "OpenMP active: ${LIBRARY_NAME}")
+    target_link_libraries(${LIBRARY_NAME} PUBLIC OpenMP::OpenMP_CXX)
+endif()
+
 target_include_directories(${LIBRARY_NAME} PUBLIC
     ${LIBRARY_INCLUDES})

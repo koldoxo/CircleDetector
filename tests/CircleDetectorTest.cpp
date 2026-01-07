@@ -2,10 +2,10 @@
 
 #include "CircleDetectorLib.h"
 
-TEST_CASE("CircleDetectorInstance")
+TEST_CASE("Instance", "CircleDetector")
 {
 
-    std::shared_ptr<std::vector<std::vector<cv::Point> >> contours = std::make_shared<std::vector<std::vector<cv::Point> >>();
+    std::shared_ptr<ZTask::ContourArray> contours = std::make_shared<ZTask::ContourArray>();
 
     ZTask::CircleDetector::ParameterPtr parameter = std::make_shared<ZTask::CircleDetector::Parameter>();
     parameter->inputContours = contours;
@@ -14,5 +14,12 @@ TEST_CASE("CircleDetectorInstance")
     op.calculate(parameter);
 
     REQUIRE(0 == op.calculate(parameter));
+}
+
+TEST_CASE("Curvature", "CircleDetector")
+{
+
+    std::shared_ptr<ZTask::ContourArray> contours = std::make_shared<ZTask::ContourArray>();
+
 }
 
