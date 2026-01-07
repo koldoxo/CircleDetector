@@ -20,7 +20,7 @@ TEST_CASE("Instance", "CircleDetector")
      REQUIRE(0 == op.calculate(parameter));
 }
 
-TEST_CASE("Curvature", "CircleDetector")
+TEST_CASE("Parameters", "CircleDetector")
 {
 
     std::shared_ptr<ZTask::ContourArray> contours = std::make_shared<ZTask::ContourArray>();
