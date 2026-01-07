@@ -13,6 +13,10 @@
         {
             "name": "opencv4",
             "version>=": "4.10.0" 
+        },
+        {
+            "name": "eigen3",
+            "version>=": "3.4.0" 
         }
     ],
     "builtin-baseline": "40619a55c3e76dc4005c8d1b7395071471bb8b96"

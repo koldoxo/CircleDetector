@@ -1,7 +1,12 @@
 #pragma once
 
+// STD
+#include <iostream>
 #include <memory>
 #include <vector>
+
+// Eigen
+#include <Eigen/Dense>
 
 // [External] OpenCV 4
 #include "opencv2/imgcodecs.hpp"

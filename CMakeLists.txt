@@ -21,6 +21,9 @@ find_package(OpenCV REQUIRED)
 
 find_package(OpenMP REQUIRED)
 
+find_package(Eigen3 3.4 REQUIRED)
+include_directories(${EIGEN3_INCLUDE_DIRS})
+
 add_subdirectory(src)
 add_subdirectory(app)
 
