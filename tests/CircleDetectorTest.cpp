@@ -36,13 +36,41 @@ TEST_CASE("Polynomial", "CircleDetector")
     auto coeffs = ZTask::polyfit<std::float_t>(x, y, 2);
 	auto value  = ZTask::polyval<std::float_t>(coeffs, 3.f);
 
+    auto coeffsd = ZTask::polyder1d<std::float_t>(coeffs);
+    auto valued  = ZTask::polyval<std::float_t>(coeffsd, 4.f);
+
     REQUIRE_THAT(coeffs[0], WithinAbs(0.0, 0.001));
     REQUIRE_THAT(coeffs[1], WithinAbs(0.0, 0.001));
     REQUIRE_THAT(coeffs[2], WithinAbs(1.0, 0.001));
     REQUIRE_THAT(value,     WithinAbs(9.0, 0.001));
+
+    REQUIRE_THAT(coeffsd[0], WithinAbs(0.0, 0.001));
+    REQUIRE_THAT(coeffsd[1], WithinAbs(2.0, 0.001));
+    REQUIRE_THAT(valued,     WithinAbs(8.0, 0.001));
+
 }
 
-TEST_CASE("Curvature", "CircleDetector")
+TEST_CASE("LocalCurvature", "CircleDetector")
 {
-    REQUIRE_THAT(1.0, WithinAbs(2.0, 0.001));
+    
+    ZTask::ContourType circle(360, cv::Point(0,0));
+
+	float target = 10.f;
+    for (int angle = 0; angle < 360; angle++)
+    {
+        float rad = static_cast<float>(angle) * static_cast<float>(CV_PI) / 180.0f;
+        circle[angle].x = static_cast<int>(target * std::cos(rad));
+        circle[angle].y = static_cast<int>(target * std::sin(rad));
+	}
+
+	std::int64_t window_size = 50;
+	int index = 100;
+
+    auto curvature = ZTask::CircleDetector::Operator::get_local_curvature(circle[index], index, circle, window_size);
+
+    auto radii = 1 / curvature;
+
+    REQUIRE_THAT(radii, WithinAbs(target, 0.1));
+
+
 }

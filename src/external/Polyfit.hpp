@@ -67,4 +67,19 @@ namespace ZTask
         return result;
     }
 
+    template <typename T>
+    std::vector<T> polyder1d(const std::vector<T>& coeffs)
+    {
+        std::vector<T> result;
+        result.resize(coeffs.size()-1);
+
+        for (auto it = result.begin(); it != result.end(); it++) 
+        {
+            auto index = std::distance(result.begin(), it);
+            *it = coeffs[index + 1] * static_cast<T>(index + 1);
+		}
+        
+        return result;
+    }
+
 }
