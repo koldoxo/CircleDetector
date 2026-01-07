@@ -15,9 +15,11 @@ add_library(${LIBRARY_NAME} STATIC
 
 target_include_directories(${LIBRARY_NAME} PUBLIC
     ${LIBRARY_INCLUDES})
+
 target_link_libraries(${LIBRARY_NAME} PUBLIC
     nlohmann_json::nlohmann_json
     ${OpenCV_LIBS}
+    PolyFit
     )
 
 if(OpenMP_CXX_FOUND)
@@ -25,5 +27,4 @@ if(OpenMP_CXX_FOUND)
     target_link_libraries(${LIBRARY_NAME} PUBLIC OpenMP::OpenMP_CXX)
 endif()
 
-target_include_directories(${LIBRARY_NAME} PUBLIC
-    ${LIBRARY_INCLUDES})
+#target_include_directories(${LIBRARY_NAME} PUBLIC ${LIBRARY_INCLUDES})
