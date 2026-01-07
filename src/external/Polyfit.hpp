@@ -7,6 +7,7 @@
 //
 //  Use the Eigen library for fitting: http://eigen.tuxfamily.org
 //  See https://eigen.tuxfamily.org/dox/group__TutorialLinearAlgebra.html for different methods
+#pragma once 
 
 #include <Eigen/Dense>
 

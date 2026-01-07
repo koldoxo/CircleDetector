@@ -41,7 +41,7 @@ namespace ZTask
         {
         public:
 
-            int calculate(ParameterPtr);
+            int calculate(ParameterPtr parameter);
 
         }; //class Operator
     };// class CircleDetector

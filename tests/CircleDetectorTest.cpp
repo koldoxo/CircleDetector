@@ -42,3 +42,7 @@ TEST_CASE("Polynomial", "CircleDetector")
     REQUIRE_THAT(value,     WithinAbs(9.0, 0.001));
 }
 
+TEST_CASE("Curvature", "CircleDetector")
+{
+    REQUIRE_THAT(1.0, WithinAbs(2.0, 0.001));
+}
