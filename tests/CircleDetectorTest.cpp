@@ -6,6 +6,8 @@
 
 using namespace Catch::Matchers;
 
+cv::RNG rng(12345);
+
 TEST_CASE("Instance", "CircleDetector")
 {
 
@@ -53,24 +55,60 @@ TEST_CASE("Polynomial", "CircleDetector")
 TEST_CASE("LocalCurvature", "CircleDetector")
 {
     
-    ZTask::ContourType circle(360, cv::Point(0,0));
+    cv::Point center(250, 250);
+    std::uint64_t radius = 200;
+    std::uint64_t tol    = 1;
+    cv::Mat circle = cv::Mat::zeros(cv::Size(500, 500), CV_8UC1);
 
-	float target = 10.f;
-    for (int angle = 0; angle < 360; angle++)
     {
-        float rad = static_cast<float>(angle) * static_cast<float>(CV_PI) / 180.0f;
-        circle[angle].x = static_cast<int>(target * std::cos(rad));
-        circle[angle].y = static_cast<int>(target * std::sin(rad));
-	}
+        for (int i = 0; i < circle.cols; i++)
+        {
+            for (int j = 0; j < circle.rows; j++)
+            {
+				auto d = std::sqrt((i - center.x) * (i - center.x) + (j - center.y) * (j - center.y));
 
-	std::int64_t window_size = 50;
-	int index = 100;
+                if (d > (radius - tol) && d < (radius + tol) )
+                {
+				    circle.at<uchar>(j, i) = 255;
+			    }
+            }
+        }
+        //cv::imwrite("C:/Git/koldoxo/CircleDetector/tests/disk.png", circle);
+    }
 
-    auto curvature = ZTask::CircleDetector::Operator::get_local_curvature(circle[index], index, circle, window_size);
+    cv::Mat blurr;
+    {
+        std::float_t s = 1.f;
+        int size = std::floor(2 * s * 2 + 1); // 95% gauge
+        cv::GaussianBlur(circle, blurr, cv::Size(size, size), s, s, cv::BORDER_CONSTANT);
+		cv::imwrite("C:/Git/koldoxo/CircleDetector/tests/blurred.png", blurr);
+    }
+    
 
-    auto radii = 1 / curvature;
+	std::shared_ptr<ZTask::ContourArray> contours = std::make_shared<ZTask::ContourArray>();
+    std::vector<cv::Vec4i> hierarchy;
+    {
+        
+        cv::findContours(blurr, *contours, hierarchy, cv::RETR_TREE, cv::CHAIN_APPROX_SIMPLE);
+        cv::Mat drawing = cv::Mat::zeros(circle.size(), CV_8UC3);
+        for (std::int64_t i = 0; i < contours->size(); i++)
+        {
+            cv::Scalar color = cv::Scalar(rng.uniform(0, 256), rng.uniform(0, 256), rng.uniform(0, 256));
+            cv::drawContours(drawing, *contours, (int)i, color, 2, cv::LINE_8, hierarchy, 0);
+        }
+	    cv::imwrite("C:/Git/koldoxo/CircleDetector/tests/contours.png", drawing);
+    }
 
-    REQUIRE_THAT(radii, WithinAbs(target, 0.1));
+    int contour_index = 1;
+    int point_index = int((*contours)[contour_index].size() / 2);
+	auto& circle_contour = (*contours)[contour_index];
+    auto& point = (*contours)[contour_index][point_index];
+	std::int64_t window_size = int(circle_contour.size() * 0.025) % 2 == 0 ? int(circle_contour.size() * 0.025) + 1 : int(circle_contour.size() * 0.025);// we need 2.5% of the contour size and odd number
 
+    auto curvature = ZTask::CircleDetector::Operator::get_local_curvature(point_index, circle_contour, window_size, false);
+
+    auto result = 1 / curvature;
+
+    REQUIRE_THAT(result, WithinAbs(radius, 5));
 
 }

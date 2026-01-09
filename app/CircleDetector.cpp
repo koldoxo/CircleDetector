@@ -114,7 +114,7 @@ int main(int argc, char* argv[])
         for (std::int64_t i = 0; i < contours->size(); i++)
         {
             cv::Scalar color = cv::Scalar(rng.uniform(0, 256), rng.uniform(0, 256), rng.uniform(0, 256));
-            drawContours(drawing, *contours, (int)i, color, 2, cv::LINE_8, hierarchy, 0);
+            cv::drawContours(drawing, *contours, (int)i, color, 2, cv::LINE_8, hierarchy, 0);
         }
         save_image(drawing, outputpath, inputfile.stem().string(), "_contours");
     }
@@ -192,3 +192,4 @@ void save_image(cv::Mat& im, std::filesystem::path outputpath, std::string stem,
     std::filesystem::path outputfile = outputpath / (stem + sufix + ".png");
     cv::imwrite(outputfile.string(), im);
 }
+ 

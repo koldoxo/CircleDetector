@@ -11,72 +11,119 @@ int ZTask::CircleDetector::Operator::calculate(ParameterPtr parameter)
 int ZTask::CircleDetector::Operator::get_curvature_profile(const ContourType& contour, std::vector<float>& profile, std::int64_t minContourLength, std::int64_t windowSize, std::int64_t windowRatio)
 {
 
-
 	return EXIT_SUCCESS;
 }
 
 
-std::float_t ZTask::CircleDetector::Operator::get_local_curvature(cv::Point& point, std::uint64_t index, const ContourType& contour, std::uint64_t windowSize)
+std::float_t ZTask::CircleDetector::Operator::get_local_curvature(std::uint64_t index, const ContourType& contour, std::uint64_t windowSize, bool debug = false)
 {
+	if (debug)
+	{
+		std::ofstream outputFile("./contour.txt");
+		for (int n = 0; n < contour.size(); n++) { outputFile << contour[n].x << "," << contour[n].x << std::endl; }
+	}
+
 	// set start and end neighbothood points
 	int start = std::max(0, static_cast<int>(index) - static_cast<int>(windowSize / 2));
-	int end   = std::min(static_cast<int>(contour.size()), static_cast<int>(index) + static_cast<int>(windowSize / 2) + 1);
+	int end	  = std::min(static_cast<int>(contour.size()), static_cast<int>(index) + static_cast<int>(windowSize / 2) + 1);
 
 	// fill neigborhood
 	auto beginIt = contour.begin() + start;
-	auto endIt = contour.begin() + end;
-	ContourType neighborhood(beginIt, endIt);
+	auto endIt	 = contour.begin() + end;
+	ContourType window(beginIt, endIt);
 
-	// split neighborhood into x and y and translate it to central point and comute angle
+	//// split neighborhood into x and y and translate it to central point and comute angle
 	std::vector<std::float_t> x;
-	x.resize(neighborhood.size());
+	x.resize(window.size());
 	std::vector<std::float_t> y;
-	y.resize(neighborhood.size());
-	std::float_t angle = 0.f;
-	for (int n=0; n < neighborhood.size(); n++) 
+	y.resize(window.size());
+
+	for (int n=0; n < window.size(); n++) 
 	{ 
 		// splitting and translating
-		x[n] = static_cast<std::float_t>( neighborhood[n].x ) - static_cast<std::float_t>(point.x);
-		y[n] = static_cast<std::float_t>( neighborhood[n].y ) - static_cast<std::float_t>(point.y);
+		x[n] = static_cast<std::float_t>( window[n].x );
+		y[n] = static_cast<std::float_t>( window[n].y );
+	}
+
+	if (debug)
+	{
+		std::ofstream outputFile("./window.txt");
+		for (int n = 0; n < x.size(); n++) { outputFile << x[n] << "," << y[n] << std::endl; }
+	} 
+
+	// translate to central point
+	int central_index =  static_cast<int>(window.size() / 2) % 2 == 0 ? static_cast<int>(window.size() / 2) + 1: static_cast<int>(window.size() / 2);
+	for (int n = 0; n < window.size(); n++)
+	{  
+	
+		x[n] -= static_cast<std::float_t>(window[central_index].x);
+		y[n] -= static_cast<std::float_t>(window[central_index].y);
+	}
 
 
-		// gradient
-		std::float_t dx = 0.0f;
-		std::float_t dy = 0.0f;
+	if (debug)
+	{
+		std::ofstream outputFile("./translate.txt");
+		for (int n = 0; n < x.size(); n++){outputFile << x[n] << "," << y[n] << std::endl;}
+	}
+
+	// soften 3-point moving average
+	for (int n = 0; n < window.size(); n++)
+	{
 		if (n == 0)
 		{
-			dx = x[n + 1] - x[n];
-			dy = y[n + 1] - y[n];
+			x[n] = (x[n] + x[n + 1]) / 2.0f;
+			y[n] = (y[n] + y[n + 1]) / 2.0f;
 		}
-		else if (n == neighborhood.size() - 1)
+		else if (n == window.size() - 1)
 		{
-			dx = x[n] - x[n - 1];
-			dy = y[n] - y[n - 1];
+			x[n] = (x[n - 1] + x[n]) / 2.0f;
+			y[n] = (y[n - 1] + y[n]) / 2.0f;
 		}
 		else
 		{
-			dx = (x[n + 1] - x[n - 1]) / 2.0f;
-			dy = (y[n + 1] - y[n - 1]) / 2.0f;
+			x[n] = (x[n - 1] + x[n] + x[n + 1]) / 3.0f;
+			y[n] = (y[n - 1] + y[n] + y[n + 1]) / 3.0f;
 		}
-
-		angle += std::atan2(dy, dx);
-		if (n == neighborhood.size()) { angle /= static_cast<std::float_t>(neighborhood.size()); }
 	}
 
-
-	// rotate points to align with x-axis
-	for(int n=0; n < neighborhood.size(); n++)
+	if (debug)
 	{
-		x[n] = x[n] * std::cos(-angle) - y[n] * std::sin(-angle);
-		y[n] = x[n] * std::sin(-angle) + y[n] * std::cos(-angle);
+		std::ofstream outputFile("./soften.txt");
+		for (int n = 0; n < x.size(); n++) { outputFile << x[n] << "," << y[n] << std::endl; }
 	}
 
-	// fit polynomial (2nd order) to neighborhood
-	auto coeffs2d = polyder1d(polyder1d(ZTask::polyfit<std::float_t>(x, y, 2)));
+	// compute angle of middle point
+	std::float_t angle;
+	{
+		auto dy = y[central_index + 1] - y[central_index - 1];
+		auto dx = x[central_index + 1] - x[central_index - 1];
+		angle = std::atan2(dy, dx);
+	}
 	
-	std::float_t curvature = 0.f;
-	for (int n = 0; n < x.size(); n++){ curvature += polyval(coeffs2d, x[n]); }
-	curvature /= static_cast<std::float_t>(x.size());
+	if (debug)
+	{
+		std::ofstream outputFile("./angle.txt");
+		outputFile << angle << std::endl;
+	}
+
+	for(int n=0; n < x.size(); n++)
+	{
+		// clockwise rotation
+		auto temp_x = x[n];
+		x[n] = x[n]   * std::cos(-angle) - y[n] * std::sin(-angle);
+		y[n] = temp_x * std::sin(-angle) + y[n] * std::cos(-angle);
+	}
+
+	if (debug)
+	{
+		std::ofstream outputFile("./rotate.txt");
+		for (int n = 0; n < x.size(); n++) { outputFile << x[n] << "," << y[n] << std::endl; }
+	}
+
+	auto coeffs = ZTask::polyfit<std::float_t>(x, y, 2);
+
+	std::float_t curvature = 2 * coeffs[2]; // curvature = 2a for y = ax^2 + bx + c
 
 	return curvature;
 }
