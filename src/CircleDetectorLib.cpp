@@ -8,10 +8,19 @@ int ZTask::CircleDetector::Operator::calculate(ParameterPtr parameter)
 	return EXIT_SUCCESS;
 }
 
-int ZTask::CircleDetector::Operator::get_curvature_profile(const ContourType& contour, std::vector<float>& profile, std::int64_t minContourLength, std::int64_t windowSize, std::int64_t windowRatio)
+std::vector<std::float_t> ZTask::CircleDetector::Operator::get_curvature_profile(const ContourType& contour, std::int64_t windowSize, std::int64_t windowRatio)
 {
+	std::vector<std::float_t> profile;
+	profile.resize(contour.size(), 0.f);
 
-	return EXIT_SUCCESS;
+	auto profileIt = profile.data();
+	for (auto& it = contour.begin(); it != contour.end(); it++ ) 
+	{
+		*profileIt = get_local_curvature(static_cast<std::uint64_t>(std::distance(contour.begin(), it)), contour, windowSize, false);
+		profileIt++;
+	}
+
+	return profile;
 }
 
 

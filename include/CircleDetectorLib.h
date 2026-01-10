@@ -6,6 +6,8 @@
 #include <memory>
 #include <vector>
 #include <cmath>
+#include <algorithm>
+#include <numeric>
 
 // Eigen
 #include <Eigen/Dense>
@@ -46,9 +48,9 @@ namespace ZTask
 
             int calculate(ParameterPtr parameter);
 
-			static int get_curvature_profile(const ContourType& contour, std::vector<float>& profile, std::int64_t minContourLength, std::int64_t windowSize, std::int64_t windowRatio);
+			static std::vector<std::float_t> get_curvature_profile(const ContourType& contour, std::int64_t windowSize, std::int64_t windowRatio);
 
-			static std::float_t get_local_curvature(std::uint64_t index, const ContourType& contour, std::uint64_t windowSize, bool debug);
+			static std::float_t              get_local_curvature(std::uint64_t index, const ContourType& contour, std::uint64_t windowSize, bool debug);
 
         }; //class Operator
     };// class CircleDetector
