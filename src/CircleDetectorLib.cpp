@@ -3,12 +3,46 @@
 int ZTask::CircleDetector::Operator::calculate(ParameterPtr parameter)
 {
 
-	std::shared_ptr<ContourArray> contours = parameter->inputContours;
+	// unpack parameters
+	std::shared_ptr<ContourArray> contours		   = parameter->inputContours;
+	std::int64_t				  minContourLength = parameter->inputMinContourLength;
+	std::float_t				  windowRatio	   = parameter->inputWindowRatio;
+	std::int64_t				  windowSize	   = parameter->inputWindowSize;
+
+	bool debug = parameter->inputDebugMode;
+
+	if (contours->size() == 0)
+	{
+		throw std::invalid_argument("No contours provided");
+	}
+
+	#pragma omp parallel for
+	for (int n = 0; n < contours->size() ; n++ )
+	{
+		if ((*contours)[n].size() < minContourLength)
+		{
+			continue;
+		}
+
+		if (windowSize == -1)
+		{
+			windowSize = static_cast<std::int64_t>(std::round(static_cast<std::float_t>((*contours)[n].size()) * windowRatio /100.f));
+			if (windowSize % 2 == 0) { windowSize += 1; }
+		}
+		
+		auto profile = get_curvature_profile((*contours)[n], windowSize, debug);
+		if (debug)
+		{
+			std::ofstream outputFile("./profile.txt");
+			for (int n = 0; n < profile.size(); n++) { outputFile << profile[n] << std::endl; }
+		}
+	}
+
 
 	return EXIT_SUCCESS;
 }
 
-std::vector<std::float_t> ZTask::CircleDetector::Operator::get_curvature_profile(const ContourType& contour, std::int64_t windowSize, std::int64_t windowRatio)
+std::vector<std::float_t> ZTask::CircleDetector::Operator::get_curvature_profile(const ContourType& contour, std::int64_t windowSize, bool debug = false)
 {
 	std::vector<std::float_t> profile;
 	profile.resize(contour.size(), 0.f);
@@ -19,6 +53,15 @@ std::vector<std::float_t> ZTask::CircleDetector::Operator::get_curvature_profile
 		*profileIt = get_local_curvature(static_cast<std::uint64_t>(std::distance(contour.begin(), it)), contour, windowSize, false);
 		profileIt++;
 	}
+
+	if (debug)
+	{
+		std::ofstream outputFile("./profile.txt");
+		for (int n = 0; n < profile.size(); n++) { outputFile << profile[n] << std::endl; }
+	}
+
+	
+	// Here we can smooth the profile if needed!
 
 	return profile;
 }

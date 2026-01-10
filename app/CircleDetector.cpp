@@ -74,10 +74,6 @@ int main(int argc, char* argv[])
 
     std::cout << "Writing to " << outputpath << std::endl;
   
-    std::string debugstr = jsonfile["debug"];
-    bool debug = false;
-    if (debugstr == "true") { debug = true; }
-
     // unpack parameters
     std::map<std::string, std::float_t> parameters;
     {
@@ -87,6 +83,8 @@ int main(int argc, char* argv[])
     
     // check parameters
     check_parameters(parameters);
+
+    auto debug = bool(parameters["debug_mode"]);
 
     // read data
     cv::Mat source = cv::imread(jsonfile["input_file"], cv::IMREAD_GRAYSCALE);
@@ -123,7 +121,11 @@ int main(int argc, char* argv[])
     {
         std::cout << "Calling CircleDetector" << std::endl;
         ZTask::CircleDetector::ParameterPtr param = std::make_shared<ZTask::CircleDetector::Parameter>();
-        param->inputContours = contours;
+        param->inputContours         = contours;
+		param->inputWindowSize       = parameters["window_size"];
+        param->inputWindowRatio      = parameters["window_ratio"];
+		param->inputMinContourLength = parameters["min_length"];
+		param->inputDebugMode        = debug;
         ZTask::CircleDetector::Operator op;
         op.calculate(param);
     }
@@ -174,13 +176,22 @@ void unpack_parameters(nlohmann::json jsonfile, std::map<std::string, std::float
     std::float_t window_ratio = std::atof(window_ratiostr.c_str());
     params["window_ratio"] = window_ratio;
 
+    std::string window_sizestr = jsonfile["window_size"];
+    std::float_t window_size = std::atof(window_sizestr.c_str());
+    params["window_size"] = window_size;
+
+    std::string debug_modestr = jsonfile["debug_mode"];
+    std::int64_t debug_mode = std::atoi(debug_modestr.c_str());
+    params["debug_mode"] = debug_mode;
+
+
 }
 
 void check_parameters(const std::map<std::string, std::float_t>& params)
 {
     for (const auto& [key, value] : params)
     {
-        if (value < 0.f)
+        if (value < 0.f && key != "window_size")
         {
             throw std::invalid_argument("At least one parameter is lesser than zero");
         }

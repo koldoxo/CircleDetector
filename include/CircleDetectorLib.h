@@ -33,7 +33,7 @@ namespace ZTask
         public:
             std::shared_ptr<ContourArray> inputContours;
             std::shared_ptr<ContourArray> outputContours;
-            std::int64_t                  inputWindowRatio;
+            std::float_t                  inputWindowRatio;
             std::int64_t                  inputWindowSize;
             std::int64_t                  inputMinContourLength;
 			bool                          inputDebugMode;
@@ -48,7 +48,7 @@ namespace ZTask
 
             int calculate(ParameterPtr parameter);
 
-			static std::vector<std::float_t> get_curvature_profile(const ContourType& contour, std::int64_t windowSize, std::int64_t windowRatio);
+			static std::vector<std::float_t> get_curvature_profile(const ContourType& contour, std::int64_t windowSize, bool debug);
 
 			static std::float_t              get_local_curvature(std::uint64_t index, const ContourType& contour, std::uint64_t windowSize, bool debug);
 

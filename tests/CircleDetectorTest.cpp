@@ -19,7 +19,7 @@ TEST_CASE("InstantiateObjects", "CircleDetector")
 
     op.calculate(parameter);
 
-     REQUIRE(0 == op.calculate(parameter));
+    REQUIRE(0 == op.calculate(parameter));
 }
 
 TEST_CASE("PassParameter", "CircleDetector")
