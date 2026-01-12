@@ -4,23 +4,31 @@ int ZTask::CircleDetector::Operator::calculate(ParameterPtr parameter)
 {
 
 	// unpack parameters
-	std::shared_ptr<ContourArray> contours		   = parameter->inputContours;
+	std::shared_ptr<ContourArray> contours	       = parameter->inputContours;	
 	std::int64_t				  minContourLength = parameter->inputMinContourLength;
 	std::float_t				  windowRatio	   = parameter->inputWindowRatio;
 	std::int64_t				  windowSize	   = parameter->inputWindowSize;
+	std::float_t				  minRadius		   = parameter->inputMinRadius;
+	std::float_t				  maxRadius		   = parameter->inputMaxRadius;
 
 	bool debug = parameter->inputDebugMode;
+
+	std::shared_ptr<std::vector<std::pair<std::float_t, cv::Point>>> outputCircles = parameter->outputCircles;
 
 	if (contours->size() == 0)
 	{
 		throw std::invalid_argument("No contours provided");
 	}
 
+	outputCircles->resize(contours->size());
+
 	#pragma omp parallel for
 	for (int n = 0; n < contours->size() ; n++ )
 	{
 		if ((*contours)[n].size() < minContourLength)
 		{
+			outputCircles->at(n).first  = -1.f;
+			outputCircles->at(n).second = cv::Point(0,0);
 			continue;
 		}
 
@@ -31,9 +39,17 @@ int ZTask::CircleDetector::Operator::calculate(ParameterPtr parameter)
 		}
 		
 		auto circle = get_circle((*contours)[n], windowSize, debug);
-		
-	}
 
+		if (circle.first > minRadius && circle.first < maxRadius)
+		{
+			(*outputCircles)[n] = circle;
+		}
+		else
+		{
+			(*outputCircles)[n].first  = -1.f;
+			(*outputCircles)[n].second = cv::Point(0, 0);
+		}	
+	}
 
 	return EXIT_SUCCESS;
 }
@@ -79,7 +95,10 @@ std::pair<std::float_t, cv::Point> ZTask::CircleDetector::Operator::get_circle(c
 	std::float_t percentOfCurvatures = static_cast<std::float_t>(count) / static_cast<std::float_t>(curvatures.size()) * 100.f;
 
 	// if the curvature is too low and not enough points agree on it, discard
-	if (std::abs(meanCurvature) < 0.000000001 && percentOfCurvatures < 66.) { return  std::pair<std::float_t, cv::Point>(); }
+	if (std::abs(meanCurvature) < 0.000000001 && percentOfCurvatures < 66.) 
+	{	
+		return  std::pair<std::float_t, cv::Point>(); 
+	}
 
 	cv::Point2f meanCenter;
 	meanCenter.x = 0.f;

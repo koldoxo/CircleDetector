@@ -125,6 +125,8 @@ int main(int argc, char* argv[])
 		param->inputWindowSize       = parameters["window_size"];
         param->inputWindowRatio      = parameters["window_ratio"];
 		param->inputMinContourLength = parameters["min_length"];
+		param->inputMinRadius        = parameters["min_radius"];
+		param->inputMaxRadius        = parameters["max_radius"];
 		param->inputDebugMode        = debug;
         ZTask::CircleDetector::Operator op;
         op.calculate(param);
@@ -179,6 +181,14 @@ void unpack_parameters(nlohmann::json jsonfile, std::map<std::string, std::float
     std::string window_sizestr = jsonfile["window_size"];
     std::float_t window_size = std::atof(window_sizestr.c_str());
     params["window_size"] = window_size;
+
+    std::string min_radiusstr = jsonfile["min_radius"];
+    std::float_t min_radius = std::atof(min_radiusstr.c_str());
+    params["min_radius"] = min_radius;
+
+    std::string max_radiusstr = jsonfile["max_radius"];
+    std::float_t max_radius = std::atof(max_radiusstr.c_str());
+    params["max_radius"] = max_radius;
 
     std::string debug_modestr = jsonfile["debug_mode"];
     std::int64_t debug_mode = std::atoi(debug_modestr.c_str());

@@ -8,26 +8,77 @@ using namespace Catch::Matchers;
 
 cv::RNG rng(12345);
 
-TEST_CASE("InstantiateObjects", "CircleDetector")
+TEST_CASE("CallOperator", "CircleDetector")
 {
+    cv::Point center(250, 250);
+    std::uint64_t radius = 200;
+    std::uint64_t tol = 1;
+    cv::Mat circle = cv::Mat::zeros(cv::Size(500, 500), CV_8UC1);
 
-    /*std::shared_ptr<ZTask::ContourArray> contours = std::make_shared<ZTask::ContourArray>();
+    {
+        for (int i = 0; i < circle.cols; i++)
+        {
+            for (int j = 0; j < circle.rows; j++)
+            {
+                auto d = std::sqrt((i - center.x) * (i - center.x) + (j - center.y) * (j - center.y));
 
-    ZTask::CircleDetector::ParameterPtr parameter = std::make_shared<ZTask::CircleDetector::Parameter>();
-    parameter->inputContours = contours;
-    ZTask::CircleDetector::Operator op;
+                if (d > (radius - tol) && d < (radius + tol))
+                {
+                    circle.at<uchar>(j, i) = 255;
+                }
+            }
+        }
+        //cv::imwrite("C:/Git/koldoxo/CircleDetector/tests/disk.png", circle);
+    }
 
-    op.calculate(parameter);
+    cv::Mat blurr;
+    {
+        std::float_t s = 1.f;
+        int size = std::floor(2 * s * 2 + 1); // 95% gauge
+        cv::GaussianBlur(circle, blurr, cv::Size(size, size), s, s, cv::BORDER_CONSTANT);
+        //cv::imwrite("C:/Git/koldoxo/CircleDetector/tests/blurred.png", blurr);
+    }
 
-    REQUIRE(0 == op.calculate(parameter));*/
-}
-
-TEST_CASE("PassParameter", "CircleDetector")
-{
 
     std::shared_ptr<ZTask::ContourArray> contours = std::make_shared<ZTask::ContourArray>();
+    std::vector<cv::Vec4i> hierarchy;
+    {
+        cv::findContours(blurr, *contours, hierarchy, cv::RETR_TREE, cv::CHAIN_APPROX_SIMPLE);
+        cv::Mat drawing = cv::Mat::zeros(circle.size(), CV_8UC3);
+        for (std::int64_t i = 0; i < contours->size(); i++)
+        {
+            cv::Scalar color = cv::Scalar(rng.uniform(0, 256), rng.uniform(0, 256), rng.uniform(0, 256));
+            cv::drawContours(drawing, *contours, (int)i, color, 2, cv::LINE_8, hierarchy, 0);
+        }
+        // cv::imwrite("C:/Git/koldoxo/CircleDetector/tests/contours.png", drawing);
+    }
+
+    int contour_index = 1;
+    int point_index = int((*contours)[contour_index].size() / 2);
+    auto& circle_contour = (*contours)[contour_index];
+    auto& point = (*contours)[contour_index][point_index];
+
+    std::int64_t window_size = int(circle_contour.size() * 0.037) % 2 == 0 ? int(circle_contour.size() * 0.037) + 1 : int(circle_contour.size() * 0.037);
+    
+    {
+        ZTask::CircleDetector::ParameterPtr param = std::make_shared<ZTask::CircleDetector::Parameter>();
+		param->inputContours = contours;
+        param->inputWindowSize        = -1;
+		param->inputWindowRatio      = 3.7f;
+		param->inputMinContourLength = 50;
+		param->inputMinRadius = 198.f;
+		param->inputMaxRadius = 202.f;
+        param->inputDebugMode = false;
+        ZTask::CircleDetector::Operator op;
+        op.calculate(param);
+        auto detected_circle = param->outputCircles->at(contour_index);
+        REQUIRE_THAT(detected_circle.first,  WithinAbs(static_cast<std::float_t>(radius), 5.f));
+        REQUIRE_THAT(detected_circle.second.x, WithinAbs(center.x, 10));
+		REQUIRE_THAT(detected_circle.second.y, WithinAbs(center.y, 10));
+    }
 
 }
+
 
 TEST_CASE("FitPolynomial", "CircleDetector")
 {
@@ -81,7 +132,7 @@ TEST_CASE("LocalCurvature", "CircleDetector")
         std::float_t s = 1.f;
         int size = std::floor(2 * s * 2 + 1); // 95% gauge
         cv::GaussianBlur(circle, blurr, cv::Size(size, size), s, s, cv::BORDER_CONSTANT);
-		cv::imwrite("C:/Git/koldoxo/CircleDetector/tests/blurred.png", blurr);
+		//cv::imwrite("C:/Git/koldoxo/CircleDetector/tests/blurred.png", blurr);
     }
     
 
@@ -96,7 +147,7 @@ TEST_CASE("LocalCurvature", "CircleDetector")
             cv::Scalar color = cv::Scalar(rng.uniform(0, 256), rng.uniform(0, 256), rng.uniform(0, 256));
             cv::drawContours(drawing, *contours, (int)i, color, 2, cv::LINE_8, hierarchy, 0);
         }
-	    cv::imwrite("C:/Git/koldoxo/CircleDetector/tests/contours.png", drawing);
+	    //cv::imwrite("C:/Git/koldoxo/CircleDetector/tests/contours.png", drawing);
     }
 
     int contour_index = 1;
@@ -117,7 +168,7 @@ TEST_CASE("LocalCurvature", "CircleDetector")
     REQUIRE_THAT(CENTER.y, WithinAbs(center.y, 10));
 }
 
-TEST_CASE("GetProfile", "CircleDetector")
+TEST_CASE("GetCircle", "CircleDetector")
 {
 
     cv::Point center(250, 250);

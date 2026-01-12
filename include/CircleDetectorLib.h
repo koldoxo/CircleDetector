@@ -32,11 +32,14 @@ namespace ZTask
         {
         public:
             std::shared_ptr<ContourArray> inputContours;
-            std::shared_ptr<ContourArray> outputContours;
             std::float_t                  inputWindowRatio;
             std::int64_t                  inputWindowSize;
             std::int64_t                  inputMinContourLength;
+			std::float_t				  inputMinRadius;
+			std::float_t                  inputMaxRadius;
 			bool                          inputDebugMode;
+
+            std::shared_ptr<std::vector<std::pair<std::float_t,cv::Point>>> outputCircles = std::make_shared<std::vector<std::pair<std::float_t, cv::Point>>>();
             
         };// class Parameter
 
