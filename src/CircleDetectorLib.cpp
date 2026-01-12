@@ -38,7 +38,7 @@ int ZTask::CircleDetector::Operator::calculate(ParameterPtr parameter)
 			if (windowSize % 2 == 0) { windowSize += 1; }
 		}
 		
-		auto circle = get_circle((*contours)[n], windowSize, debug);
+		auto circle = get_circle((*contours)[n], windowSize, false);
 
 		if (circle.first > minRadius && circle.first < maxRadius)
 		{

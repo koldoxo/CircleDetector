@@ -118,6 +118,7 @@ int main(int argc, char* argv[])
     }
 
     // calling circle-detector
+	std::shared_ptr<std::vector<std::pair<std::float_t, cv::Point>>> detectedCircles;
     {
         std::cout << "Calling CircleDetector" << std::endl;
         ZTask::CircleDetector::ParameterPtr param = std::make_shared<ZTask::CircleDetector::Parameter>();
@@ -130,8 +131,21 @@ int main(int argc, char* argv[])
 		param->inputDebugMode        = debug;
         ZTask::CircleDetector::Operator op;
         op.calculate(param);
+		detectedCircles = param->outputCircles;
     }
     
+    cv::Mat output = cv::Mat::zeros(source.size(), CV_8UC3);
+    for (std::int64_t i = 0; i < detectedCircles->size(); i++)
+    {
+        auto circle = detectedCircles->at(i);
+        if (circle.first > 0.f)
+        {
+            cv::circle(output, circle.second, static_cast<int>(circle.first), cv::Scalar(0, 255, 0), 2); //circle.second
+        }
+	}
+
+	save_image(output, outputpath, inputfile.stem().string(), "_circles");
+
     // show result
     // cv::imshow("curvature", destination);
     // cv::waitKey();
@@ -141,7 +155,6 @@ int main(int argc, char* argv[])
 
 void pre_processing(cv::Mat& in, cv::Mat& out, std::map<std::string, std::float_t>& params, bool debug)
 {
-    
     cv::Mat bin;
     std::float_t t = params.find("threshold")->second;
     {
@@ -150,10 +163,20 @@ void pre_processing(cv::Mat& in, cv::Mat& out, std::map<std::string, std::float_
     
     if (debug) { save_image(bin, "./", "debug", "bin"); }
 
+
+    cv::Mat close;
+    {
+        int kernel_size = 5;
+        cv::Mat kernel = cv::getStructuringElement(cv::MORPH_RECT, cv::Size(kernel_size, kernel_size));
+        cv::morphologyEx(bin, close, cv::MORPH_CLOSE, kernel);
+    }
+    
+    if (debug) { save_image(close, "./", "debug", "close"); }
+
     std::float_t s = params.find("sigma")->second;
     int size = std::floor(2 * s * 2 + 1); // 95% gauge
     {
-        cv::GaussianBlur(bin, out, cv::Size(size, size), s, s, cv::BORDER_CONSTANT);
+        cv::GaussianBlur(close, out, cv::Size(size, size), s, s, cv::BORDER_CONSTANT);
     }
 
     if (debug) { save_image(out, "./", "debug", "blur"); }
@@ -193,7 +216,6 @@ void unpack_parameters(nlohmann::json jsonfile, std::map<std::string, std::float
     std::string debug_modestr = jsonfile["debug_mode"];
     std::int64_t debug_mode = std::atoi(debug_modestr.c_str());
     params["debug_mode"] = debug_mode;
-
 
 }
 
