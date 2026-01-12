@@ -15,39 +15,46 @@ int ZTask::CircleDetector::Operator::calculate(ParameterPtr parameter)
 
 	std::shared_ptr<std::vector<std::pair<std::float_t, cv::Point>>> outputCircles = parameter->outputCircles;
 
+	// we need more checks to ensure valid inputs
 	if (contours->size() == 0)
 	{
 		throw std::invalid_argument("No contours provided");
 	}
 
+	// prepare output
 	outputCircles->resize(contours->size());
 
+	// for each contour trigger a thread for circle computation
 	#pragma omp parallel for
 	for (int n = 0; n < contours->size() ; n++ )
 	{
-		if ((*contours)[n].size() < minContourLength)
+		auto threadId = n;//omp_get_thread_num();//n;
+
+		if ((*contours)[threadId].size() < minContourLength)
 		{
-			outputCircles->at(n).first  = -1.f;
-			outputCircles->at(n).second = cv::Point(0,0);
+			outputCircles->at(threadId).first  = -1.f;
+			outputCircles->at(threadId).second = cv::Point(0,0);
 			continue;
 		}
 
 		if (windowSize == -1)
 		{
-			windowSize = static_cast<std::int64_t>(std::round(static_cast<std::float_t>((*contours)[n].size()) * windowRatio /100.f));
+			windowSize = static_cast<std::int64_t>(std::round(static_cast<std::float_t>((*contours)[threadId].size()) * windowRatio /100.f));
+			if (windowSize <= 11) { windowSize = 11; }
 			if (windowSize % 2 == 0) { windowSize += 1; }
+			
 		}
 		
-		auto circle = get_circle((*contours)[n], windowSize, false);
+		auto circle = get_circle((*contours)[threadId], windowSize, debug);
 
 		if (circle.first > minRadius && circle.first < maxRadius)
 		{
-			(*outputCircles)[n] = circle;
+			(*outputCircles)[threadId] = circle;
 		}
 		else
 		{
-			(*outputCircles)[n].first  = -1.f;
-			(*outputCircles)[n].second = cv::Point(0, 0);
+			(*outputCircles)[threadId].first  = -1.f;
+			(*outputCircles)[threadId].second = cv::Point(0, 0);
 		}	
 	}
 
@@ -66,7 +73,7 @@ std::pair<std::float_t, cv::Point> ZTask::CircleDetector::Operator::get_circle(c
 	auto centersIt	 = centers.data();
 	for (auto& it = contour.begin(); it != contour.end(); it++ ) 
 	{
-		auto curvatureAndCenter = get_local_curvature(static_cast<std::uint64_t>(std::distance(contour.begin(), it)), contour, windowSize, false);
+		auto curvatureAndCenter = get_local_curvature(static_cast<std::uint64_t>(std::distance(contour.begin(), it)), contour, windowSize, debug);
 		
 		*curvatureIt = curvatureAndCenter.first;
 		curvatureIt++;
@@ -250,9 +257,8 @@ std::pair<std::float_t, cv::Point2f> ZTask::CircleDetector::Operator::get_local_
 	// we avoid division by zero
 	if (std::abs(curvature) > 0.000000001)
 	{
-		center.x = (1. / curvature)*nx;
-		center.y = (1. / curvature)*ny;
-		//center = -center; // we need a vector from the point to the center (-1)
+		center.x = 0.f;//(1. / curvature) * nx;
+		center.y = (1. / curvature);//(1. / curvature) * ny;
 
 		auto temp_x = center.x;
 		center.x = center.x * std::cos(-angle) + center.y * std::sin(-angle);

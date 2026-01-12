@@ -1,12 +1,13 @@
 {
-    "input_file" : "..\\..\\data\\synthetic\\circle.png",
+    "input_file" : "..\\..\\data\\real\\1.png",
     "output_path" : "..\\..\\output",
-    "threshold" : "45",
-    "sigma" : "5",
-    "min_length" : "100",
-    "window_size": "-1",
+    "threshold" : "100",
+    "sigma" : "3",
+    "close_size" : "3",
+    "min_length" : "31",
+    "window_size": "15",
     "window_ratio": "3.7",
     "min_radius": "1",
-    "max_radius": "100000",
-    "debug_mode" : "1"
+    "max_radius": "500",
+    "debug_mode" : "0"
 }

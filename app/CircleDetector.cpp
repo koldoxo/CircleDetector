@@ -90,10 +90,10 @@ int main(int argc, char* argv[])
     cv::Mat source = cv::imread(jsonfile["input_file"], cv::IMREAD_GRAYSCALE);
 
     // call pre_processing
-    cv::Mat proc;
+    cv::Mat preproc;
     {
         std::cout << "Calling Preprocessing" << std::endl;
-        pre_processing(source, proc, parameters, debug);
+        pre_processing(source, preproc, parameters, debug);
     }
     
     // get contours
@@ -101,7 +101,7 @@ int main(int argc, char* argv[])
     std::vector<cv::Vec4i> hierarchy;
     {
         std::cout << "Finding Contours" << std::endl;
-        cv::findContours(proc, *contours, hierarchy, cv::RETR_TREE, cv::CHAIN_APPROX_SIMPLE);
+        cv::findContours(preproc, *contours, hierarchy, cv::RETR_TREE, cv::CHAIN_APPROX_SIMPLE);
     }
     
     cv::Mat drawing = cv::Mat::zeros(source.size(), CV_8UC3);
@@ -166,7 +166,8 @@ void pre_processing(cv::Mat& in, cv::Mat& out, std::map<std::string, std::float_
 
     cv::Mat close;
     {
-        int kernel_size = 5;
+        auto kernel_size = static_cast<int>(params.find("close_size")->second);
+		if (kernel_size % 2 == 0) { kernel_size += 1; } // make odd
         cv::Mat kernel = cv::getStructuringElement(cv::MORPH_RECT, cv::Size(kernel_size, kernel_size));
         cv::morphologyEx(bin, close, cv::MORPH_CLOSE, kernel);
     }
@@ -192,6 +193,10 @@ void unpack_parameters(nlohmann::json jsonfile, std::map<std::string, std::float
     std::string sigmastr = jsonfile["sigma"];
     std::float_t sigma = std::atof(sigmastr.c_str());
     params["sigma"] = sigma;
+
+    std::string close_sizestr = jsonfile["close_size"];
+    std::float_t close_size = std::atof(close_sizestr.c_str());
+    params["close_size"] = close_size;
 
     std::string min_lengthstr = jsonfile["min_length"];
     std::float_t min_length = std::atof(min_lengthstr.c_str());

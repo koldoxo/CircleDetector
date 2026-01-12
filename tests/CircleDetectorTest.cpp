@@ -64,11 +64,11 @@ TEST_CASE("CallOperator", "CircleDetector")
         ZTask::CircleDetector::ParameterPtr param = std::make_shared<ZTask::CircleDetector::Parameter>();
 		param->inputContours = contours;
         param->inputWindowSize        = -1;
-		param->inputWindowRatio      = 3.7f;
-		param->inputMinContourLength = 50;
-		param->inputMinRadius = 198.f;
-		param->inputMaxRadius = 202.f;
-        param->inputDebugMode = false;
+		param->inputWindowRatio       = 3.7f;
+		param->inputMinContourLength  = 50;
+		param->inputMinRadius         = 198.f;
+		param->inputMaxRadius         = 202.f;
+        param->inputDebugMode         = false;
         ZTask::CircleDetector::Operator op;
         op.calculate(param);
         auto detected_circle = param->outputCircles->at(contour_index);

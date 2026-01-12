@@ -27,7 +27,7 @@ In the .json file please provile following entries
 3. threshold: Threshold for binarisation [PREPROCESSING]
 4. sigma: Sigma for blurring [PREPROCESSING]
 5. min_length: Minimum length of a contour 
-6. window_size: Observation window wize (if -1 it takes the window ratio of the contour for further processing) 
+6. window_size: Observation window size (if -1 it takes the window ratio of the contour for further processing) 
 7. window_ratio: Window ratio chooses a proper window size for local curvature computation
 8. min_radius: minimum radius of found circles for detection 
 9. max_radius: maximum radius of found circles for detection
