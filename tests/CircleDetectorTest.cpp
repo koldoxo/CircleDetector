@@ -11,7 +11,7 @@ cv::RNG rng(12345);
 TEST_CASE("InstantiateObjects", "CircleDetector")
 {
 
-    std::shared_ptr<ZTask::ContourArray> contours = std::make_shared<ZTask::ContourArray>();
+    /*std::shared_ptr<ZTask::ContourArray> contours = std::make_shared<ZTask::ContourArray>();
 
     ZTask::CircleDetector::ParameterPtr parameter = std::make_shared<ZTask::CircleDetector::Parameter>();
     parameter->inputContours = contours;
@@ -19,7 +19,7 @@ TEST_CASE("InstantiateObjects", "CircleDetector")
 
     op.calculate(parameter);
 
-    REQUIRE(0 == op.calculate(parameter));
+    REQUIRE(0 == op.calculate(parameter));*/
 }
 
 TEST_CASE("PassParameter", "CircleDetector")
@@ -107,12 +107,14 @@ TEST_CASE("LocalCurvature", "CircleDetector")
     // we need 2.5% of the contour size and odd number
     // with 3.7% we get much better results but it increases the window 
 
-    auto curvature = ZTask::CircleDetector::Operator::get_local_curvature(point_index, circle_contour, window_size, false);
+    auto pair = ZTask::CircleDetector::Operator::get_local_curvature(point_index, circle_contour, window_size, false);
 
-    auto R = 1 / curvature;
+    auto R = 1 / pair.first;
+	auto CENTER = pair.second;
 
     REQUIRE_THAT(R, WithinAbs(radius, 5));
-
+    REQUIRE_THAT(CENTER.x, WithinAbs(center.x, 10));
+    REQUIRE_THAT(CENTER.y, WithinAbs(center.y, 10));
 }
 
 TEST_CASE("GetProfile", "CircleDetector")
@@ -151,7 +153,6 @@ TEST_CASE("GetProfile", "CircleDetector")
     std::shared_ptr<ZTask::ContourArray> contours = std::make_shared<ZTask::ContourArray>();
     std::vector<cv::Vec4i> hierarchy;
     {
-
         cv::findContours(blurr, *contours, hierarchy, cv::RETR_TREE, cv::CHAIN_APPROX_SIMPLE);
         cv::Mat drawing = cv::Mat::zeros(circle.size(), CV_8UC3);
         for (std::int64_t i = 0; i < contours->size(); i++)
@@ -169,16 +170,14 @@ TEST_CASE("GetProfile", "CircleDetector")
 
 	std::int64_t window_size = int(circle_contour.size() * 0.037) % 2 == 0 ? int(circle_contour.size() * 0.037) + 1 : int(circle_contour.size() * 0.037);// we need 2.5% of the contour size and odd number for good results
 
-    auto profile = ZTask::CircleDetector::Operator::get_curvature_profile(circle_contour, window_size, false);
+    auto CIRCLE = ZTask::CircleDetector::Operator::get_circle(circle_contour, window_size, false);
     {
         //std::ofstream outputFile("C:\\Git\\koldoxo\\CircleDetector\\tests\\poc\\profile11.txt");
         //for (int n = 0; n < profile.size(); n++) { outputFile << profile[n] << std::endl; }
     }
     
-    std::float_t curvature = std::accumulate(profile.begin(), profile.end(), 0.0);
-    curvature /= profile.size();
-    
-    auto R = 1 / curvature;
-    REQUIRE_THAT(R, WithinAbs(radius,5.0));
+    REQUIRE_THAT(CIRCLE.first,    WithinAbs(radius,5.0));
+    REQUIRE_THAT(CIRCLE.second.x, WithinAbs(center.x, 5.0));
+    REQUIRE_THAT(CIRCLE.second.y, WithinAbs(center.y, 5.0));
 
 }

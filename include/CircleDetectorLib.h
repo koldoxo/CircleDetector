@@ -48,9 +48,9 @@ namespace ZTask
 
             int calculate(ParameterPtr parameter);
 
-			static std::vector<std::float_t> get_curvature_profile(const ContourType& contour, std::int64_t windowSize, bool debug);
+			static std::pair<std::float_t, cv::Point>   get_circle(const ContourType& contour, std::int64_t windowSize, bool debug);
 
-			static std::float_t              get_local_curvature(std::uint64_t index, const ContourType& contour, std::uint64_t windowSize, bool debug);
+			static std::pair<std::float_t, cv::Point2f> get_local_curvature(std::uint64_t index, const ContourType& contour, std::uint64_t windowSize, bool debug);
 
         }; //class Operator
     };// class CircleDetector

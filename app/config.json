@@ -6,5 +6,7 @@
     "min_length" : "20",
     "window_size": "-1",
     "window_ratio": "3.7",
+    "min_radius": "1",
+    "max_radius": "100000",
     "debug_mode" : "0"
 }
