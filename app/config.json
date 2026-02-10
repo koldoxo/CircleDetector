@@ -1,5 +1,5 @@
 {
-    "input_file" : "..\\..\\data\\real\\1.png",
+    "input_file" : "..\\..\\data\\synthetic\\circle.png",
     "output_path" : "..\\..\\output",
     "threshold" : "100",
     "sigma" : "3",

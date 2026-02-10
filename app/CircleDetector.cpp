@@ -31,7 +31,7 @@ void pre_processing(cv::Mat& in, cv::Mat& out, std::map<std::string, std::float_
 int main(int argc, char* argv[])
 {
     std::cout << "Circle Detection..." << std::endl;
-
+	auto start = std::chrono::high_resolution_clock::now();
     // check config file
     // std::filesystem::path inputconfig("C:\\Git\\koldoxo\\CircleDetector\\app\\config.json");
 
@@ -149,6 +149,10 @@ int main(int argc, char* argv[])
     // show result
     // cv::imshow("curvature", destination);
     // cv::waitKey();
+    auto end = std::chrono::high_resolution_clock::now();
+	auto duration = std::chrono::duration_cast<std::chrono::milliseconds>(end - start);
+
+	std::cout << "Processing Time (ms): " << duration.count() << std::endl;
 
     return EXIT_SUCCESS;
 }

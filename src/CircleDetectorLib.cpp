@@ -24,6 +24,8 @@ int ZTask::CircleDetector::Operator::calculate(ParameterPtr parameter)
 	// prepare output
 	outputCircles->resize(contours->size());
 
+	auto numThreads = omp_get_max_threads();
+
 	// for each contour trigger a thread for circle computation
 	#pragma omp parallel for
 	for (int n = 0; n < contours->size() ; n++ )
